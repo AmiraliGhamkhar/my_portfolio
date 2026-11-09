@@ -1,0 +1,35 @@
+{
+  "name": "amirali-ghamkhar-portfolio",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/*.test.mjs && node scripts/check-php.mjs && node scripts/check-schema-fields.mjs",
+    "build": "tsc --noEmit && vite build && node scripts/prerender.mjs && node scripts/check-build.mjs",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "dependencies": {
+    "@fontsource-variable/manrope": "^5.2.6",
+    "@fontsource-variable/vazirmatn": "^5.2.6",
+    "gsap": "^3.13.0",
+    "lucide-react": "^0.468.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router": "^7.18.5",
+    "react-router-dom": "^7.18.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "php-parser": "^3.7.0",
+    "typescript": "^5.7.3",
+    "vite": "^6.3.5"
+  }
+}
