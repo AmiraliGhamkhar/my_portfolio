@@ -6,12 +6,12 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dist = path.join(root, 'dist');
 const routes = [
-  ['/fa/', 'fa', 'rtl', 'سلام، من امیرعلی هستم.'],
-  ['/en/', 'en', 'ltr', 'Hi, I&#x27;m Amirali.'],
+  ['/fa/', 'fa', 'rtl', 'مهندس هوش مصنوعی که سیستم‌های هوشمند برای سلامت، آموزش و محصولات واقعی می‌سازد.'],
+  ['/en/', 'en', 'ltr', 'AI Engineer building intelligent systems for healthcare, education and real-world products.'],
   ['/fa/projects/', 'fa', 'rtl', 'پروژه'],
   ['/en/projects/', 'en', 'ltr', 'Projects'],
-  ['/fa/contact/', 'fa', 'rtl', 'بیایید چیزی هوشمندانه بسازیم.'],
-  ['/en/contact/', 'en', 'ltr', 'Let&#x27;s Build Something Intelligent.'],
+  ['/fa/contact/', 'fa', 'rtl', 'مسئله‌ای دارید که ارزش ساختن داشته باشد؟'],
+  ['/en/contact/', 'en', 'ltr', 'Have a problem worth building?'],
   ['/fa/projects/gamas-bot/', 'fa', 'rtl', 'گاماس بات'],
   ['/en/projects/gamas-bot/', 'en', 'ltr', 'Gamas Bot'],
   ['/fa/projects/gamas-website/', 'fa', 'rtl', 'وب‌سایت گاماس'],

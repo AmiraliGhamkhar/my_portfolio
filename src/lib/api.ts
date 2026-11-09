@@ -76,6 +76,10 @@ export interface PublicProjectRecord extends PublicTranslationRecord {
   cover_url?: string;
   featured?: boolean | number;
   sort_order?: number;
+  problem?: string;
+  solution?: string;
+  engineering?: string[];
+  outcome?: string;
 }
 
 export async function getCsrfToken(): Promise<string> {

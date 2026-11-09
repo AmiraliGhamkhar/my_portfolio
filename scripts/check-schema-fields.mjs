@@ -1,12 +1,16 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Engine from 'php-parser';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const php = await readFile(path.join(root, 'backend/src/router.php'), 'utf8');
-const schema = await readFile(path.join(root, 'backend/migrations/001_schema.sql'), 'utf8');
+const migrationsDir = path.join(root, 'backend/migrations');
+const migrationFiles = (await readdir(migrationsDir)).filter((name) => name.endsWith('.sql')).sort();
+assert.ok(migrationFiles.length >= 1, 'at least one schema migration exists');
+const migrationSources = await Promise.all(migrationFiles.map((name) => readFile(path.join(migrationsDir, name), 'utf8')));
+const schema = migrationSources.join('\n');
 const parser = new Engine({ parser: { phpVersion: '8.2', suppressErrors: false }, ast: { withPositions: true } });
 const ast = parser.parseCode(php, 'backend/src/router.php');
 
@@ -33,7 +37,16 @@ for (const match of schema.matchAll(/CREATE TABLE IF NOT EXISTS ([a-z_]+)\s*\(([
   const [, name, body] = match;
   const columns = new Map();
   for (const line of body.split('\n')) {
-    const column = line.match(/^\s*([a-z_][a-z0-9_]*)\s+([a-z]+)(?:\((\d+)\))?/i);
+    const column = line.match(/^\s*(?:ADD\s+COLUMN\s+)?([a-z_][a-z0-9_]*)\s+([a-z]+)(?:\((\d+)\))?/i);
+    if (column) columns.set(column[1], { type: column[2].toUpperCase(), width: column[3] ? Number(column[3]) : null });
+  }
+  tables.set(name, columns);
+}
+for (const match of schema.matchAll(/ALTER TABLE ([a-z_]+)\s*([\s\S]*?);/gi)) {
+  const [, name, body] = match;
+  const columns = tables.get(name) ?? new Map();
+  for (const line of body.split('\n')) {
+    const column = line.match(/^\s*(?:ADD\s+COLUMN\s+)?([a-z_][a-z0-9_]*)\s+([a-z]+)(?:\((\d+)\))?/i);
     if (column) columns.set(column[1], { type: column[2].toUpperCase(), width: column[3] ? Number(column[3]) : null });
   }
   tables.set(name, columns);
@@ -92,7 +105,7 @@ for (const [resource, spec] of Object.entries(resources)) {
     assertColumn(spec.table, field, type, `${resource} base field ${field}`);
   }
   for (const [field, type] of Object.entries(spec.translation_fields)) {
-    assertColumn(spec.translation_table, field === 'details' ? 'details_json' : field, type, `${resource} translation field ${field}`);
+    assertColumn(spec.translation_table, type === 'json_array' ? `${field}_json` : field, type, `${resource} translation field ${field}`);
   }
 }
 
@@ -110,4 +123,14 @@ for (const [field, type] of Object.entries({ name: 'text_200', role: 'text_300',
 
 const expertise = resources.expertise;
 assert.equal(expertise.translation_fields.title, 'text_220');
+assert.equal(expertise.translation_fields.focus, 'text_500');
+assert.equal(resources.projects.translation_fields.engineering, 'json_array');
+
+const columnFunction = ast.children.find((node) => node.kind === 'function' && node.name.name === 'app_translation_column');
+assert.ok(columnFunction, 'app_translation_column exists');
+const columnSource = php.slice(columnFunction.loc.start.offset, columnFunction.loc.end.offset);
+for (const field of Object.keys(resources.projects.translation_fields).filter((name) => resources.projects.translation_fields[name] === 'json_array')) {
+  assert.match(columnSource, new RegExp(`'${field}'\\s*=>\\s*'${field}_json'`), `${field} maps to its ${field}_json column`);
+}
+
 console.log(`Schema field limits match PHP validation for ${Object.keys(resources).length} CMS resources and the profile.`);

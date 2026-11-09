@@ -8,13 +8,13 @@ function app_resource_map(): array
         'projects' => [
             'table' => 'projects', 'translation_table' => 'project_translations', 'foreign_key' => 'project_id',
             'base_fields' => ['slug' => 'slug', 'status' => 'status', 'category_key' => 'text_100', 'cover_url' => 'asset_url', 'cover_media_id' => 'nullable_id', 'github_url' => 'url', 'live_url' => 'url', 'video_url' => 'url', 'featured' => 'bool', 'sort_order' => 'int', 'published_at' => 'datetime'],
-            'translation_fields' => ['title' => 'text_240', 'category' => 'text_160', 'summary' => 'text_1000', 'description' => 'long_text', 'details' => 'json_array', 'seo_title' => 'text_300', 'seo_description' => 'text_500'],
+            'translation_fields' => ['title' => 'text_240', 'category' => 'text_160', 'summary' => 'text_1000', 'description' => 'long_text', 'details' => 'json_array', 'problem' => 'long_text', 'solution' => 'long_text', 'engineering' => 'json_array', 'outcome' => 'long_text', 'seo_title' => 'text_300', 'seo_description' => 'text_500'],
             'required' => ['slug'], 'order' => 'sort_order ASC, id ASC',
         ],
         'expertise' => [
             'table' => 'expertise', 'translation_table' => 'expertise_translations', 'foreign_key' => 'expertise_id',
             'base_fields' => ['slug' => 'slug', 'icon' => 'text_40', 'status' => 'status', 'sort_order' => 'int'],
-            'translation_fields' => ['title' => 'text_220', 'description' => 'long_text'],
+            'translation_fields' => ['title' => 'text_220', 'focus' => 'text_500', 'description' => 'long_text'],
             'required' => ['slug'], 'order' => 'sort_order ASC, id ASC',
         ],
         'technologies' => [
@@ -173,11 +173,31 @@ function app_translation_value_for_db(string $field, mixed $value, array $types)
     return app_validate_value($type, $value);
 }
 
+function app_translation_column(string $field): string
+{
+    return match ($field) {
+        'details' => 'details_json',
+        'engineering' => 'engineering_json',
+        default => $field,
+    };
+}
+
+function app_json_translation_fields(array $types): array
+{
+    return array_keys(array_filter($types, static fn (string $type): bool => $type === 'json_array'));
+}
+
+function app_decode_json_list(mixed $raw): array
+{
+    $decoded = is_string($raw) ? json_decode($raw, true) : null;
+    return is_array($decoded) ? $decoded : [];
+}
+
 function app_translation_defaults(array $types): array
 {
     $values = [];
     foreach ($types as $name => $type) {
-        $column = $name === 'details' ? 'details_json' : $name;
+        $column = app_translation_column($name);
         $values[$column] = $type === 'json_array' ? '[]' : '';
     }
     return $values;
@@ -186,9 +206,10 @@ function app_translation_defaults(array $types): array
 function app_read_translations(array $spec, int $id): array
 {
     $fields = array_keys($spec['translation_fields']);
+    $jsonFields = app_json_translation_fields($spec['translation_fields']);
     $select = [];
     foreach ($fields as $field) {
-        $column = $field === 'details' ? 'details_json' : $field;
+        $column = app_translation_column($field);
         $select[] = '`' . $column . '`';
     }
     $sql = 'SELECT language, ' . implode(', ', $select) . ' FROM `' . $spec['translation_table'] . '` WHERE `' . $spec['foreign_key'] . '` = :id';
@@ -198,12 +219,9 @@ function app_read_translations(array $spec, int $id): array
     foreach ($stmt->fetchAll() as $row) {
         $language = (string) $row['language'];
         foreach ($fields as $field) {
-            $column = $field === 'details' ? 'details_json' : $field;
+            $column = app_translation_column($field);
             $value = $row[$column] ?? '';
-            if ($field === 'details') {
-                $decoded = is_string($value) ? json_decode($value, true) : null;
-                $value = is_array($decoded) ? $decoded : [];
-            }
+            if (in_array($field, $jsonFields, true)) $value = app_decode_json_list($value);
             $translations[$language][$field] = $value;
         }
     }
@@ -245,9 +263,9 @@ function app_public_collection(string $resource, string $language): array
                 $cover->execute(['id' => $row['cover_media_id']]);
                 $row['cover_url'] = (string) ($cover->fetchColumn() ?: '');
             }
-            $decoded = json_decode((string) ($row['details_json'] ?? '[]'), true);
-            $row['details'] = is_array($decoded) ? $decoded : [];
-            unset($row['details_json'], $row['category_key']);
+            $row['details'] = app_decode_json_list($row['details_json'] ?? null);
+            $row['engineering'] = app_decode_json_list($row['engineering_json'] ?? null);
+            unset($row['details_json'], $row['engineering_json'], $row['category_key']);
             $row['featured'] = (bool) $row['featured'];
             $row['technologies'] = app_record_technologies((int) $row['id'], $language, false, true);
             $row['images'] = app_record_images((int) $row['id'], $language);
@@ -336,7 +354,7 @@ function app_save_translations(array $spec, int $id, mixed $input): void
         $submitted = [];
         foreach ($types as $field => $type) {
             if (array_key_exists($field, $input[$language])) {
-                $column = $field === 'details' ? 'details_json' : $field;
+                $column = app_translation_column($field);
                 $submitted[$column] = app_translation_value_for_db($field, $input[$language][$field], $types);
             }
         }

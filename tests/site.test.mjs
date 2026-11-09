@@ -12,8 +12,8 @@ test('the two explicit locales and project slugs are present', async () => {
   assert.match(content, /export type Locale = 'fa' \| 'en'/);
   const slugs = [...content.matchAll(/slug: '([^']+)'/g)].map((match) => match[1]);
   assert.deepEqual(slugs, ['gamas-bot', 'gamas-website', 'deepgram-fa-speech']);
-  assert.match(content, /ایده‌ها را به سیستم‌های هوشمند تبدیل می‌کنم\./);
-  assert.match(content, /Turning Ideas Into Intelligent Systems\./);
+  assert.match(content, /مهندس هوش مصنوعی که سیستم‌های هوشمند برای سلامت، آموزش و محصولات واقعی می‌سازد\./);
+  assert.match(content, /AI Engineer building intelligent systems for healthcare, education and real-world products\./);
 });
 
 test('the public Apache rules preserve PHP API routes and use a static SPA fallback', async () => {
@@ -51,6 +51,7 @@ test('public mutations are guarded by CSRF and sensitive password handling', asy
 test('the build uses local fonts and the project never contains credentials', async () => {
   const css = await read('src/styles.css');
   assert.doesNotMatch(css, /fonts\.googleapis\.com/);
+  assert.doesNotMatch(css, /ticker/);
   const example = await read('backend/config.example.php');
   assert.match(example, /getenv\('DB_PASSWORD'\)/);
   assert.doesNotMatch(example, /password'\s*=>\s*'[^']+'/);

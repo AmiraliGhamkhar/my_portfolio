@@ -28,6 +28,10 @@ Project slugs are shared between locales by default; a language switch preserves
 
 The public UI contains a conservative editorial fallback. When PHP/MySQL is configured, public API results override fallback sections. Empty database content never erases the fallback site. Empty optional research/publication/achievement groups remain unpublished rather than being fabricated.
 
+## Case-study content
+
+Project translations carry an optional structured case study — `problem`, `solution`, an `engineering` list, and `outcome` — alongside the shorter `details` capability list. These are stored per language and edited in the CMS like any other translation field. When a translation leaves them empty the public UI falls back to its verified static copy, so a partially translated project still reads as a complete page.
+
 ## Animation and accessibility
 
-GSAP/ScrollTrigger powers progressive entrance reveals and scroll progress. Timelines are scoped to React component lifecycles and reverted on route changes. CSS keeps content visible if JavaScript/animation fails, honors `prefers-reduced-motion`, and simplifies motion on smaller screens. Native horizontal scrolling and explicit previous/next controls keep the project rail usable by touch and keyboard.
+GSAP/ScrollTrigger powers progressive entrance reveals and a scroll-progress indicator. Timelines are scoped to React component lifecycles and reverted on route changes. The reveal chunk is loaded on demand, and a timer removes the pre-animation hidden state if that chunk fails, so content never stays invisible. CSS honors `prefers-reduced-motion` and simplifies motion on smaller screens; no animation is required to read any content.

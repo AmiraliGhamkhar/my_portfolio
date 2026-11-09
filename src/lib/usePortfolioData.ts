@@ -9,7 +9,9 @@ import {
   type Locale,
   type Profile,
   type Project,
+  type ProjectCaseStudy,
   type ProjectImage,
+  type ProjectTranslation,
 } from '../content';
 import { apiRequest, type PublicProjectRecord } from './api';
 
@@ -90,6 +92,7 @@ interface ApiExpertise extends Record<string, unknown> {
   number?: string;
   icon?: ExpertiseItem['icon'];
   title?: string;
+  focus?: string;
   description?: string;
 }
 
@@ -118,18 +121,31 @@ function initialData(locale: Locale): SiteData {
   };
 }
 
+function stringList(value: unknown, fallback: string[]): string[] {
+  const items = Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string' && item.trim() !== '') : [];
+  return items.length ? items : fallback;
+}
+
+function mapCaseStudy(record: PublicProjectRecord, fallback?: ProjectTranslation): ProjectCaseStudy {
+  const source = fallback?.caseStudy;
+  return {
+    problem: typeof record.problem === 'string' && record.problem.trim() ? record.problem : source?.problem ?? '',
+    solution: typeof record.solution === 'string' && record.solution.trim() ? record.solution : source?.solution ?? '',
+    engineering: stringList(record.engineering, source?.engineering ?? []),
+    outcome: typeof record.outcome === 'string' && record.outcome.trim() ? record.outcome : source?.outcome ?? '',
+  };
+}
+
 function mapRemoteProject(record: PublicProjectRecord, locale: Locale, index: number, fallback?: Project): Project {
   const translation = fallback?.[locale];
-  const remoteDetails = Array.isArray(record.details)
-    ? record.details.filter((item): item is string => typeof item === 'string')
-    : [];
-  const details = remoteDetails.length ? remoteDetails : translation?.details ?? [];
+  const details = stringList(record.details, translation?.details ?? []);
   const nextTranslation = {
     title: record.title || translation?.title || record.slug,
     category: record.category || translation?.category || '',
     summary: record.summary || translation?.summary || '',
     description: record.description || record.case_study || translation?.description || '',
     details,
+    caseStudy: mapCaseStudy(record, translation),
     seoTitle: record.seo_title || translation?.seoTitle || record.title || record.slug,
     seoDescription: record.seo_description || translation?.seoDescription || record.summary || '',
     ...(translation?.note ? { note: translation.note } : {}),
@@ -141,6 +157,7 @@ function mapRemoteProject(record: PublicProjectRecord, locale: Locale, index: nu
     summary: '',
     description: '',
     details: [],
+    caseStudy: { problem: '', solution: '', engineering: [], outcome: '' },
     seoTitle: record.slug,
     seoDescription: '',
   };
@@ -223,6 +240,7 @@ export function usePortfolioData(locale: Locale): SiteData {
             number: String(item.number ?? String(index + 1).padStart(2, '0')),
             icon: icons.includes(item.icon as ExpertiseItem['icon']) ? item.icon as ExpertiseItem['icon'] : icons[index % icons.length],
             title: String(item.title ?? ''),
+            focus: typeof item.focus === 'string' ? item.focus : '',
             description: String(item.description ?? ''),
           }));
         }

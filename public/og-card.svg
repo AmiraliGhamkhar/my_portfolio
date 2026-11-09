@@ -1,28 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none" role="img" aria-label="Amirali Ghamkhar — AI Engineer / Medical AI / Software">
   <defs>
-    <linearGradient id="wash" x1="78" y1="62" x2="1034" y2="585" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#D9F56B" stop-opacity=".16"/>
-      <stop offset="1" stop-color="#111210" stop-opacity="0"/>
-    </linearGradient>
     <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse">
-      <path d="M36 0H0V36" stroke="#F2F0EA" stroke-opacity=".055"/>
+      <path d="M36 0H0V36" stroke="#F2F1EA" stroke-opacity=".05"/>
     </pattern>
   </defs>
-  <rect width="1200" height="630" fill="#111210"/>
+  <rect width="1200" height="630" fill="#101110"/>
   <rect width="1200" height="630" fill="url(#grid)"/>
-  <rect width="1200" height="630" fill="url(#wash)"/>
-  <path d="M48 48H1152V582H48z" stroke="#F2F0EA" stroke-opacity=".16"/>
-  <path d="M88 124H1112" stroke="#D9F56B" stroke-opacity=".72"/>
-  <text x="88" y="101" fill="#D9F56B" font-family="Arial,sans-serif" font-size="16" font-weight="700" letter-spacing="4">AG / PERSONAL PORTFOLIO</text>
-  <text x="88" y="264" fill="#F2F0EA" font-family="Arial,sans-serif" font-size="68" font-weight="700" letter-spacing="-2">Amirali Ghamkhar</text>
-  <text x="92" y="316" fill="#D9F56B" font-family="Arial,sans-serif" font-size="19" font-weight="600" letter-spacing="3">AI ENGINEER  ·  SOFTWARE DEVELOPER</text>
-  <text x="88" y="406" fill="#F2F0EA" font-family="Arial,sans-serif" font-size="30" font-weight="500">Turning ideas into intelligent systems.</text>
-  <text x="88" y="454" fill="#F2F0EA" fill-opacity=".74" font-family="Arial,sans-serif" font-size="25">ایده‌ها را به سیستم‌های هوشمند تبدیل می‌کنم.</text>
-  <circle cx="970" cy="434" r="112" stroke="#D9F56B" stroke-opacity=".55"/>
-  <circle cx="970" cy="434" r="82" stroke="#D9F56B" stroke-opacity=".24"/>
-  <circle cx="970" cy="434" r="10" fill="#D9F56B"/>
-  <path d="M970 298V368M970 500V570M834 434H904M1036 434H1106" stroke="#F2F0EA" stroke-opacity=".45"/>
-  <text x="956" y="451" fill="#F2F0EA" font-family="Arial,sans-serif" font-size="46" font-weight="700">AG</text>
-  <text x="88" y="542" fill="#F2F0EA" fill-opacity=".48" font-family="Arial,sans-serif" font-size="14" letter-spacing="3">AI / MEDICAL SPEECH / SOFTWARE SYSTEMS</text>
-  <text x="1033" y="542" fill="#D9F56B" font-family="Arial,sans-serif" font-size="14" letter-spacing="2">FA — EN</text>
+  <path d="M72 72H1128V558H72z" stroke="#F2F1EA" stroke-opacity=".12"/>
+  <path d="M72 128H1128" stroke="#2C2F28"/>
+  <text x="112" y="108" fill="#D9F56B" font-family="ui-monospace, monospace" font-size="15" letter-spacing="5">AI ENGINEERING · MEDICAL AI · SOFTWARE</text>
+  <text x="112" y="256" fill="#F2F1EA" font-family="Arial, Helvetica, sans-serif" font-size="66" font-weight="700" letter-spacing="-2">Amirali Ghamkhar</text>
+  <text x="112" y="330" fill="#A5A89B" font-family="Arial, Helvetica, sans-serif" font-size="27" font-weight="400">AI Engineer building intelligent systems for</text>
+  <text x="112" y="372" fill="#A5A89B" font-family="Arial, Helvetica, sans-serif" font-size="27" font-weight="400">healthcare, education and real-world products.</text>
+  <path d="M112 418H420" stroke="#D9F56B" stroke-width="2"/>
+  <text x="112" y="470" fill="#F2F1EA" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="400">Gamas Bot · Gamas Website · Medical STT</text>
+  <text x="112" y="516" fill="#8A8D82" font-family="ui-monospace, monospace" font-size="14" letter-spacing="3">amiralighamkhar.ir  ·  github.com/AmiraliGhamkhar</text>
 </svg>

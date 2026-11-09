@@ -2,6 +2,8 @@ import { useLocation } from 'react-router';
 import { projectForPath, profileByLocale, type Locale } from '../content';
 import { useSiteContent } from '../lib/SiteContent';
 
+const ORIGIN = 'https://amiralighamkhar.ir';
+
 export function StructuredData({ locale }: { locale: Locale }) {
   const location = useLocation();
   const { profile, projects } = useSiteContent();
@@ -12,27 +14,46 @@ export function StructuredData({ locale }: { locale: Locale }) {
   const person = {
     '@type': 'Person',
     name,
-    url: `https://amiralighamkhar.ir/${locale}/`,
+    url: `${ORIGIN}/${locale}/`,
     jobTitle: profile.role,
     sameAs: [profile.githubUrl].filter(Boolean),
-    knowsAbout: ['Artificial intelligence', 'Medical AI', 'Software engineering', 'Speech processing'],
+    knowsAbout: [
+      'Artificial intelligence',
+      'Medical AI',
+      'Speech recognition',
+      'Software engineering',
+      'Natural language processing',
+    ],
   };
+
   const schema = project
     ? {
         '@context': 'https://schema.org',
-        '@type': 'CreativeWork',
+        '@type': 'SoftwareSourceCode',
         name: project[locale].title,
         description: project[locale].summary,
-        url: `https://amiralighamkhar.ir${location.pathname}`,
+        url: `${ORIGIN}${location.pathname}`,
         inLanguage: locale,
-        creator: person,
-        sameAs: project.githubUrl ? [project.githubUrl] : [],
+        codeRepository: project.githubUrl || undefined,
+        programmingLanguage: project.technologies,
+        author: { '@context': 'https://schema.org', ...person },
       }
     : {
         '@context': 'https://schema.org',
         '@graph': [
-          { '@context': 'https://schema.org', ...person, mainEntityOfPage: 'https://amiralighamkhar.ir/' },
-          { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Amirali Ghamkhar', url: 'https://amiralighamkhar.ir/', inLanguage: locale },
+          { '@context': 'https://schema.org', ...person, mainEntityOfPage: `${ORIGIN}/` },
+          { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Amirali Ghamkhar', url: `${ORIGIN}/`, inLanguage: locale },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'ItemList',
+            name: locale === 'fa' ? 'پروژه‌های منتخب' : 'Selected projects',
+            itemListElement: projects.map((item, index) => ({
+              '@type': 'ListItem',
+              position: index + 1,
+              url: `${ORIGIN}/${locale}/projects/${item.slug}/`,
+              name: item[locale].title,
+            })),
+          },
         ],
       };
 

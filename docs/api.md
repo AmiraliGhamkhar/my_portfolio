@@ -12,12 +12,16 @@ The API is same-origin only. The browser uses relative paths such as `/api/v1/pr
 | `GET` | `/csrf` | Starts/continues a session and returns a token for public state-changing requests. |
 | `GET` | `/profile?lang=fa\|en` | Localized profile and public contact/social URLs. |
 | `GET` | `/settings` | Allowlisted public SEO defaults and Open Graph image setting. |
-| `GET` | `/projects?lang=fa\|en` | Published projects, their localized translations, linked technologies, cover, and gallery. |
+| `GET` | `/projects?lang=fa\|en` | Published projects, their localized translations, structured case-study fields, linked technologies, cover, and gallery. |
 | `GET` | `/projects/{slug}?lang=fa\|en` | One published project. |
 | `GET` | `/{expertise,technologies,experience,education,research,publications,achievements,social-links}?lang=fa\|en` | Published/visible localized collection. |
 | `POST` | `/contact` | Stores a validated contact message. |
 
 The language query parameter is restricted to `fa` and `en`; an absent or invalid value defaults to Persian. Public collection responses have the form `{ "data": { "items": [...] } }`. A single project and profile are returned as an object inside `data`.
+
+Project translations carry the case-study structure used by the public case pages: `problem` and `solution` (long text), `engineering` (a JSON array of strings) and `outcome` (long text). They are optional: when a translation leaves them empty the frontend keeps its verified static copy. `details` is a JSON array of one-line capabilities, and `engineering_json` is the column behind `engineering`.
+
+Expertise translations carry `focus`, a short one-line capability summary shown beside each capability title. Leave it empty and the title and description stand on their own.
 
 Contact requests use JSON:
 

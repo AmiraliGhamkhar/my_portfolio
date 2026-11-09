@@ -18,10 +18,10 @@ The schema is `backend/migrations/001_schema.sql`; verified starter records are 
 | `admin_users` | Admin account, password hash, active state, and login timestamps. |
 | `profile`, `profile_translations` | Contact/profile fields plus Persian and English hero, biography, and SEO text. |
 | `site_settings` | JSON-encoded settings; public reads are restricted to an explicit SEO/Open Graph allowlist. |
-| `projects`, `project_translations` | Project slug, status, sort order, cover/media link, external URLs, featured state, bilingual text, details, and SEO. |
+| `projects`, `project_translations` | Project slug, status, sort order, cover/media link, external URLs, featured state, bilingual text, capabilities (`details_json`), the structured case study (`problem`, `solution`, `engineering_json`, `outcome`), and SEO. |
 | `project_images` | Ordered project gallery entries with optional media association and per-language alt text. |
 | `technologies`, `technology_translations`, `project_technologies` | Bilingual technology names, categories, and project associations. |
-| `expertise`, `expertise_translations` | Published areas of expertise and their translations. |
+| `expertise`, `expertise_translations` | Published capabilities, a one-line `focus` summary, and their translations. |
 | `experience`, `experience_translations` | Optional work/experience entries. No entries are invented. |
 | `education`, `education_translations` | Optional education entries. No entries are invented. |
 | `research`, `research_translations` | Research interests, distinct from publications or claimed research results. |
@@ -33,6 +33,10 @@ The schema is `backend/migrations/001_schema.sql`; verified starter records are 
 | `schema_migrations` | Applied migration filenames and timestamps. |
 
 Content foreign keys cascade to their translations. Project-technology joins and media uploader references are constrained. Media references from profile/project/gallery records are additionally checked by the delete endpoint; remove a reference in the CMS before deleting media.
+
+## Migrations
+
+`001_schema.sql` creates the original schema. `002_project_case_study.sql` adds the optional case-study columns to `project_translations` and the `focus` column to `expertise_translations`. `migrate.php` applies migration files in sorted order and records each one, so `002` is applied once on an existing installation and the new columns stay nullable or defaulted.
 
 ## Setup and maintenance
 

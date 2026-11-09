@@ -10,7 +10,7 @@ npm test
 npm run build
 ```
 
-The automated suite includes source-level route/content/security assertions, PHP grammar parsing with `php-parser` using the PHP 8.2 grammar, and a static check that CMS field validators match SQL column widths. The production build pre-renders the known Persian and English routes, project details, contact pages, and admin shell; it checks HTML language/direction, metadata, sitemap entries, and required deployment files.
+The automated suite includes source-level route/content/security assertions, PHP grammar parsing with `php-parser` using the PHP 8.2 grammar, and a static check that CMS field validators match SQL column widths across every schema migration. The production build pre-renders the known Persian and English routes, project details, contact pages, and admin shell; it checks HTML language/direction, metadata, sitemap entries, and required deployment files.
 
 These checks do **not** execute PHP, connect to MySQL, interpret Apache rewrite rules, validate cPanel permissions, or substitute for browser/device testing. A PHP grammar parse is not a runtime test. Do not report an API or production deployment as verified based on these checks alone.
 

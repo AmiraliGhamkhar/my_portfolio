@@ -41,7 +41,16 @@ CMS text/SEO edits appear on the client-rendered site after the API refresh. Bec
 
 ## Content integrity
 
-Public project summaries are grounded in the three linked GitHub repositories. No education, employment, awards, client work, email address, or personal photograph has been invented. Unknown biography and contact fields remain editable placeholders in the CMS. The portrait is an abstract replaceable illustration until Amirali uploads a real image.
+Public project summaries and the structured case-study fields (problem, solution, engineering notes, outcome) are grounded in the three linked GitHub repositories — their own architecture documentation, module layouts and READMEs. The "system figure" shown for each project is a text pipeline view of that documented flow, not an illustration. No education, employment, awards, client work, email address, or personal photograph has been invented. Unknown biography and contact fields remain editable placeholders in the CMS. The portrait is an abstract replaceable illustration until Amirali uploads a real image.
+
+## Frontend structure
+
+- `src/sections/` — one file per home-page section, composed by `src/pages/HomePage.tsx`.
+- `src/components/` — reusable primitives (section heading, system figure, project entry, contact form, navigation, footer, SEO).
+- `src/content.ts` — bilingual fallback content, labels, routes and the per-project pipeline views.
+- `src/styles.css` — design tokens first, then public site styles, then the admin CMS styles.
+
+Motion is progressive enhancement: GSAP is loaded on demand, `[data-reveal]` elements are only pre-hidden when motion is welcome, and a timer restores them if the animation chunk fails.
 
 ## Deployment note
 
