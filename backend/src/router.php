@@ -100,27 +100,13 @@ function app_safe_asset_url(mixed $value): string
 
 function app_validate_value(string $type, mixed $value): mixed
 {
+    if (preg_match('/^text_(\d+)$/', $type, $matches)) return app_safe_text($value ?? '', (int) $matches[1]);
     return match ($type) {
         'slug' => (static function () use ($value): string {
             $slug = strtolower(app_safe_text($value, 120, false));
             if (!preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $slug)) app_fail(422, 'validation_error', 'Slugs may contain lowercase letters, numbers, and single hyphens.');
             return $slug;
         })(),
-        'text' => app_safe_text($value ?? '', 240),
-        'text_32' => app_safe_text($value ?? '', 32),
-        'text_40' => app_safe_text($value ?? '', 40),
-        'text_80' => app_safe_text($value ?? '', 80),
-        'text_100' => app_safe_text($value ?? '', 100),
-        'text_120' => app_safe_text($value ?? '', 120),
-        'text_160' => app_safe_text($value ?? '', 160),
-        'text_180' => app_safe_text($value ?? '', 180),
-        'text_200' => app_safe_text($value ?? '', 200),
-        'text_220' => app_safe_text($value ?? '', 220),
-        'text_240' => app_safe_text($value ?? '', 240),
-        'text_300' => app_safe_text($value ?? '', 300),
-        'text_500' => app_safe_text($value ?? '', 500),
-        'text_600' => app_safe_text($value ?? '', 600),
-        'text_1000' => app_safe_text($value ?? '', 1000),
         'email' => (static function () use ($value): string {
             $email = strtolower(app_safe_text($value ?? '', 254));
             if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) app_fail(422, 'validation_error', 'An email address is invalid.');
@@ -166,13 +152,6 @@ function app_validate_fields(array $fields, array $input): array
     return $valid;
 }
 
-function app_translation_value_for_db(string $field, mixed $value, array $types): mixed
-{
-    $type = $types[$field] ?? null;
-    if ($type === null) app_fail(422, 'validation_error', 'An unsupported translation field was provided.');
-    return app_validate_value($type, $value);
-}
-
 function app_translation_defaults(array $types): array
 {
     $values = [];
@@ -183,19 +162,18 @@ function app_translation_defaults(array $types): array
     return $values;
 }
 
-function app_read_translations(array $spec, int $id): array
+function app_read_translations_map(array $spec, array $ids): array
 {
+    if ($ids === []) return [];
     $fields = array_keys($spec['translation_fields']);
-    $select = [];
-    foreach ($fields as $field) {
-        $column = $field === 'details' ? 'details_json' : $field;
-        $select[] = '`' . $column . '`';
-    }
-    $sql = 'SELECT language, ' . implode(', ', $select) . ' FROM `' . $spec['translation_table'] . '` WHERE `' . $spec['foreign_key'] . '` = :id';
-    $stmt = app_db()->prepare($sql);
-    $stmt->execute(['id' => $id]);
-    $translations = ['fa' => [], 'en' => []];
+    $select = array_map(static fn(string $f): string => '`' . ($f === 'details' ? 'details_json' : $f) . '`', $fields);
+    $fk = $spec['foreign_key'];
+    $in = implode(', ', array_fill(0, count($ids), '?'));
+    $stmt = app_db()->prepare('SELECT `' . $fk . '` AS record_id, language, ' . implode(', ', $select) . ' FROM `' . $spec['translation_table'] . "` WHERE `{$fk}` IN ({$in})");
+    $stmt->execute(array_values($ids));
+    $byId = [];
     foreach ($stmt->fetchAll() as $row) {
+        $rid = (int) $row['record_id'];
         $language = (string) $row['language'];
         foreach ($fields as $field) {
             $column = $field === 'details' ? 'details_json' : $field;
@@ -204,53 +182,78 @@ function app_read_translations(array $spec, int $id): array
                 $decoded = is_string($value) ? json_decode($value, true) : null;
                 $value = is_array($decoded) ? $decoded : [];
             }
-            $translations[$language][$field] = $value;
+            $byId[$rid][$language][$field] = $value;
         }
     }
-    return $translations;
+    return $byId;
 }
 
-function app_record_technologies(int $projectId, string $language = 'en', bool $slugs = false, bool $publishedOnly = false): array
+function app_project_technology_slugs_map(array $projectIds): array
 {
-    $selection = $slugs ? 'tech.slug' : 'COALESCE(t.name, tl.name)';
-    $visibility = $publishedOnly ? " AND tech.status='published'" : '';
-    $stmt = app_db()->prepare('SELECT ' . $selection . ' AS value, tech.category FROM project_technologies pt JOIN technologies tech ON tech.id=pt.technology_id LEFT JOIN technology_translations t ON t.technology_id=tech.id AND t.language=:lang LEFT JOIN technology_translations tl ON tl.technology_id=tech.id AND tl.language=\'en\' WHERE pt.project_id=:project_id' . $visibility . ' ORDER BY tech.sort_order, tech.id');
-    $stmt->execute(['lang' => $language, 'project_id' => $projectId]);
-    return array_values(array_filter(array_map(static fn(array $row): string => (string) ($row['value'] ?? ''), $stmt->fetchAll())));
+    if ($projectIds === []) return [];
+    $in = implode(', ', array_fill(0, count($projectIds), '?'));
+    $stmt = app_db()->prepare("SELECT pt.project_id, tech.slug FROM project_technologies pt JOIN technologies tech ON tech.id=pt.technology_id WHERE pt.project_id IN ({$in}) ORDER BY tech.sort_order, tech.id");
+    $stmt->execute(array_values($projectIds));
+    $byId = [];
+    foreach ($stmt->fetchAll() as $row) {
+        $slug = (string) ($row['slug'] ?? '');
+        if ($slug !== '') $byId[(int) $row['project_id']][] = $slug;
+    }
+    return $byId;
 }
 
-function app_record_images(int $projectId, string $language): array
-{
-    $alt = $language === 'fa' ? 'pi.alt_fa' : 'pi.alt_en';
-    $stmt = app_db()->prepare('SELECT pi.id, COALESCE(NULLIF(pi.image_url, \'\'), m.public_url) AS url, ' . $alt . ' AS alt, pi.sort_order FROM project_images pi LEFT JOIN media_library m ON m.id=pi.media_id WHERE pi.project_id=:id ORDER BY pi.sort_order, pi.id');
-    $stmt->execute(['id' => $projectId]);
-    return $stmt->fetchAll();
-}
-
-function app_public_collection(string $resource, string $language): array
+function app_public_collection(string $resource, string $language, ?string $slug = null): array
 {
     $map = app_resource_map();
     if (!isset($map[$resource])) app_fail(404, 'not_found', 'This resource was not found.');
     $spec = $map[$resource];
     $statusClause = $resource === 'social-links' ? 'r.is_visible = 1' : "r.status = 'published'";
-    $sql = 'SELECT r.*, t.* FROM `' . $spec['table'] . '` r JOIN `' . $spec['translation_table'] . '` t ON t.`' . $spec['foreign_key'] . '` = r.id AND t.language = :language WHERE ' . $statusClause . ' ORDER BY ' . $spec['order'] . ' LIMIT 500';
+    $params = ['language' => $language];
+    if ($resource === 'projects' && $slug !== null) {
+        $statusClause .= ' AND r.slug = :slug';
+        $params['slug'] = $slug;
+    }
+    $mediaJoin = $resource === 'projects' ? ' LEFT JOIN media_library cm ON cm.id = r.cover_media_id' : '';
+    $mediaSelect = $resource === 'projects' ? ', cm.public_url AS media_cover_url' : '';
+    $sql = 'SELECT t.*, r.*' . $mediaSelect . ' FROM `' . $spec['table'] . '` r JOIN `' . $spec['translation_table'] . '` t ON t.`' . $spec['foreign_key'] . '` = r.id AND t.language = :language' . $mediaJoin . ' WHERE ' . $statusClause . ' ORDER BY r.' . str_replace(', ', ', r.', $spec['order']) . ' LIMIT 500';
     $stmt = app_db()->prepare($sql);
-    $stmt->execute(['language' => $language]);
+    $stmt->execute($params);
     $rows = $stmt->fetchAll();
+    if ($rows === []) return [];
+
+    $projectTechMap = [];
+    $projectImageMap = [];
+    if ($resource === 'projects') {
+        $projectIds = array_map(static fn(array $r): int => (int) $r['id'], $rows);
+        $in = implode(', ', array_fill(0, count($projectIds), '?'));
+        $techStmt = app_db()->prepare("SELECT pt.project_id, COALESCE(t.name, tl.name) AS value FROM project_technologies pt JOIN technologies tech ON tech.id=pt.technology_id LEFT JOIN technology_translations t ON t.technology_id=tech.id AND t.language=? LEFT JOIN technology_translations tl ON tl.technology_id=tech.id AND tl.language='en' WHERE pt.project_id IN ({$in}) AND tech.status='published' ORDER BY tech.sort_order, tech.id");
+        $techStmt->execute(array_merge([$language], $projectIds));
+        foreach ($techStmt->fetchAll() as $tRow) {
+            $val = (string) ($tRow['value'] ?? '');
+            if ($val !== '') $projectTechMap[(int) $tRow['project_id']][] = $val;
+        }
+        $alt = $language === 'fa' ? 'pi.alt_fa' : 'pi.alt_en';
+        $imgStmt = app_db()->prepare("SELECT pi.id, pi.project_id, COALESCE(NULLIF(pi.image_url, ''), m.public_url) AS url, {$alt} AS alt, pi.sort_order FROM project_images pi LEFT JOIN media_library m ON m.id=pi.media_id WHERE pi.project_id IN ({$in}) ORDER BY pi.sort_order, pi.id");
+        $imgStmt->execute($projectIds);
+        foreach ($imgStmt->fetchAll() as $iRow) {
+            $pid = (int) $iRow['project_id'];
+            unset($iRow['project_id']);
+            $projectImageMap[$pid][] = $iRow;
+        }
+    }
+
     foreach ($rows as &$row) {
         $row['id'] = (int) $row['id'];
         if ($resource === 'projects') {
-            if (empty($row['cover_url']) && !empty($row['cover_media_id'])) {
-                $cover = app_db()->prepare('SELECT public_url FROM media_library WHERE id=:id');
-                $cover->execute(['id' => $row['cover_media_id']]);
-                $row['cover_url'] = (string) ($cover->fetchColumn() ?: '');
+            if (empty($row['cover_url']) && !empty($row['media_cover_url'])) {
+                $row['cover_url'] = (string) $row['media_cover_url'];
             }
             $decoded = json_decode((string) ($row['details_json'] ?? '[]'), true);
             $row['details'] = is_array($decoded) ? $decoded : [];
-            unset($row['details_json'], $row['category_key']);
+            unset($row['details_json'], $row['category_key'], $row['media_cover_url']);
             $row['featured'] = (bool) $row['featured'];
-            $row['technologies'] = app_record_technologies((int) $row['id'], $language, false, true);
-            $row['images'] = app_record_images((int) $row['id'], $language);
+            $row['technologies'] = $projectTechMap[$row['id']] ?? [];
+            $row['images'] = $projectImageMap[$row['id']] ?? [];
         } elseif ($resource === 'expertise') {
             $row['number'] = str_pad((string) max(1, (int) $row['sort_order']), 2, '0', STR_PAD_LEFT);
         } elseif ($resource === 'technologies') {
@@ -296,8 +299,9 @@ function app_admin_record(string $resource, array $spec, int $id): ?array
     $row = $stmt->fetch();
     if (!$row) return null;
     $row['id'] = (int) $row['id'];
-    $row['translations'] = app_read_translations($spec, $id);
-    if ($resource === 'projects') $row['technologies'] = app_record_technologies($id, 'en', true);
+    $translations = app_read_translations_map($spec, [$id])[$id] ?? [];
+    $row['translations'] = ['fa' => $translations['fa'] ?? [], 'en' => $translations['en'] ?? []];
+    if ($resource === 'projects') $row['technologies'] = app_project_technology_slugs_map([$id])[$id] ?? [];
     return $row;
 }
 
@@ -306,12 +310,25 @@ function app_admin_collection(string $resource, string $query = ''): array
     $map = app_resource_map();
     if (!isset($map[$resource])) app_fail(404, 'not_found', 'This admin section was not found.');
     $spec = $map[$resource];
-    $stmt = app_db()->query('SELECT id FROM `' . $spec['table'] . '` ORDER BY ' . $spec['order'] . ' LIMIT 500');
+    $rows = app_db()->query('SELECT * FROM `' . $spec['table'] . '` ORDER BY ' . $spec['order'] . ' LIMIT 500')->fetchAll();
+    if ($rows === []) return [];
+
+    $ids = array_map(static fn(array $r): int => (int) $r['id'], $rows);
+    $translationsById = app_read_translations_map($spec, $ids);
+    $techById = $resource === 'projects' ? app_project_technology_slugs_map($ids) : [];
+
     $items = [];
-    foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $id) {
-        $record = app_admin_record($resource, $spec, (int) $id);
-        if ($record) $items[] = $record;
+    foreach ($rows as $row) {
+        $id = (int) $row['id'];
+        $row['id'] = $id;
+        $row['translations'] = [
+            'fa' => $translationsById[$id]['fa'] ?? [],
+            'en' => $translationsById[$id]['en'] ?? [],
+        ];
+        if ($resource === 'projects') $row['technologies'] = $techById[$id] ?? [];
+        $items[] = $row;
     }
+
     if ($query !== '') {
         $needle = function_exists('mb_strtolower') ? mb_strtolower($query, 'UTF-8') : strtolower($query);
         $items = array_values(array_filter($items, static function (array $record) use ($needle): bool {
@@ -337,7 +354,7 @@ function app_save_translations(array $spec, int $id, mixed $input): void
         foreach ($types as $field => $type) {
             if (array_key_exists($field, $input[$language])) {
                 $column = $field === 'details' ? 'details_json' : $field;
-                $submitted[$column] = app_translation_value_for_db($field, $input[$language][$field], $types);
+                $submitted[$column] = app_validate_value($type, $input[$language][$field]);
             }
         }
         if ($submitted === []) continue;
@@ -363,18 +380,19 @@ function app_sync_project_technologies(int $projectId, mixed $input): void
 {
     if (!is_array($input)) app_fail(422, 'validation_error', 'Project technologies must be a list.');
     $db = app_db();
+    $slugs = array_values(array_unique(array_map(static fn(mixed $tech): string => strtolower(app_safe_text($tech, 120, false)), array_slice($input, 0, 40))));
     $ids = [];
-    foreach (array_slice($input, 0, 40) as $technology) {
-        $slug = strtolower(app_safe_text($technology, 120, false));
-        $stmt = $db->prepare('SELECT id FROM technologies WHERE slug=:slug LIMIT 1');
-        $stmt->execute(['slug' => $slug]);
-        $id = $stmt->fetchColumn();
-        if (!$id) app_fail(422, 'validation_error', 'Create a technology before assigning it to a project.');
-        $ids[] = (int) $id;
+    if ($slugs !== []) {
+        $in = implode(', ', array_fill(0, count($slugs), '?'));
+        $stmt = $db->prepare("SELECT slug, id FROM technologies WHERE slug IN ({$in})");
+        $stmt->execute($slugs);
+        $found = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+        if (count($found) !== count($slugs)) app_fail(422, 'validation_error', 'Create a technology before assigning it to a project.');
+        $ids = array_map('intval', array_values($found));
     }
     $db->prepare('DELETE FROM project_technologies WHERE project_id=:id')->execute(['id' => $projectId]);
     $insert = $db->prepare('INSERT INTO project_technologies (project_id, technology_id) VALUES (:project_id, :technology_id)');
-    foreach (array_unique($ids) as $id) $insert->execute(['project_id' => $projectId, 'technology_id' => $id]);
+    foreach ($ids as $id) $insert->execute(['project_id' => $projectId, 'technology_id' => $id]);
 }
 
 function app_create_record(string $resource, array $spec, array $input): array
@@ -511,15 +529,16 @@ function app_save_settings(array $input): array
     return app_admin_settings();
 }
 
-function app_admin_messages(string $query): array
+function app_admin_messages(string $query, int $limit = 500): array
 {
     $sql = 'SELECT id, name, email, subject, message, status, created_at FROM contact_messages';
     $params = [];
     if ($query !== '') {
-        $sql .= ' WHERE name LIKE :q OR email LIKE :q OR message LIKE :q';
-        $params['q'] = '%' . $query . '%';
+        $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $query);
+        $sql .= " WHERE name LIKE :q ESCAPE '\\\\' OR email LIKE :q ESCAPE '\\\\' OR message LIKE :q ESCAPE '\\\\'";
+        $params['q'] = '%' . $escaped . '%';
     }
-    $sql .= ' ORDER BY created_at DESC LIMIT 500';
+    $sql .= ' ORDER BY created_at DESC LIMIT ' . max(1, min(500, $limit));
     $stmt = app_db()->prepare($sql);
     $stmt->execute($params);
     return $stmt->fetchAll();
@@ -569,9 +588,15 @@ function app_upload_media(array $admin): array
     $url = rtrim((string) app_config('upload_url', '/uploads'), '/') . '/' . $name;
     $original = basename((string) ($file['name'] ?? 'image'));
     $original = app_safe_text($original, 255);
-    $stmt = app_db()->prepare('INSERT INTO media_library (storage_name, original_name, public_url, mime_type, size_bytes, uploaded_by) VALUES (:storage_name, :original_name, :public_url, :mime_type, :size_bytes, :uploaded_by)');
-    $stmt->execute(['storage_name' => $name, 'original_name' => $original, 'public_url' => $url, 'mime_type' => $mime, 'size_bytes' => (int) $file['size'], 'uploaded_by' => $admin['id']]);
-    $id = (int) app_db()->lastInsertId();
+    $id = 0;
+    try {
+        $stmt = app_db()->prepare('INSERT INTO media_library (storage_name, original_name, public_url, mime_type, size_bytes, uploaded_by) VALUES (:storage_name, :original_name, :public_url, :mime_type, :size_bytes, :uploaded_by)');
+        $stmt->execute(['storage_name' => $name, 'original_name' => $original, 'public_url' => $url, 'mime_type' => $mime, 'size_bytes' => (int) $file['size'], 'uploaded_by' => $admin['id']]);
+        $id = (int) app_db()->lastInsertId();
+    } catch (Throwable $error) {
+        if (is_file($destination)) @unlink($destination);
+        throw $error;
+    }
     $get = app_db()->prepare('SELECT id, storage_name, original_name, public_url, mime_type, size_bytes, alt_fa, alt_en, created_at FROM media_library WHERE id=:id');
     $get->execute(['id' => $id]);
     return $get->fetch() ?: [];
@@ -628,6 +653,9 @@ function app_project_images(int $projectId): array
 
 function app_add_project_image(int $projectId, array $input): array
 {
+    $projectCheck = app_db()->prepare('SELECT 1 FROM projects WHERE id=:id');
+    $projectCheck->execute(['id' => $projectId]);
+    if (!$projectCheck->fetchColumn()) app_fail(404, 'not_found', 'This project was not found.');
     $mediaId = isset($input['media_id']) && is_numeric($input['media_id']) ? (int) $input['media_id'] : null;
     $url = app_safe_asset_url($input['image_url'] ?? '');
     if ($mediaId === null && $url === '') app_fail(422, 'validation_error', 'Select an uploaded image or provide an HTTPS image URL.');
@@ -715,11 +743,12 @@ function app_change_password(array $admin, array $input): array
 function app_dashboard(): array
 {
     $tables = ['projects', 'expertise', 'technologies', 'experience', 'education', 'research', 'publications', 'achievements', 'social_links', 'media_library'];
-    $counts = [];
-    foreach ($tables as $table) $counts[$table] = (int) app_db()->query('SELECT COUNT(*) FROM `' . $table . '`')->fetchColumn();
-    $counts['unread_messages'] = (int) app_db()->query("SELECT COUNT(*) FROM contact_messages WHERE status='unread'")->fetchColumn();
-    $counts['published_projects'] = (int) app_db()->query("SELECT COUNT(*) FROM projects WHERE status='published'")->fetchColumn();
-    return ['counts' => $counts, 'recent_messages' => array_slice(app_admin_messages(''), 0, 5)];
+    $selects = array_map(static fn(string $t): string => "(SELECT COUNT(*) FROM `{$t}`) AS `{$t}`", $tables);
+    $selects[] = "(SELECT COUNT(*) FROM contact_messages WHERE status='unread') AS unread_messages";
+    $selects[] = "(SELECT COUNT(*) FROM projects WHERE status='published') AS published_projects";
+    $row = app_db()->query('SELECT ' . implode(', ', $selects))->fetch() ?: [];
+    $counts = array_map('intval', $row);
+    return ['counts' => $counts, 'recent_messages' => app_admin_messages('', 5)];
 }
 
 function app_dispatch(): never
@@ -742,12 +771,8 @@ function app_dispatch(): never
     if ($method === 'GET' && count($segments) >= 1 && in_array($segments[0], ['projects', 'expertise', 'technologies', 'experience', 'education', 'research', 'publications', 'achievements', 'social-links'], true)) {
         $resource = $segments[0];
         if ($resource === 'projects' && count($segments) === 2) {
-            $stmt = app_db()->prepare("SELECT id FROM projects WHERE slug=:slug AND status='published' LIMIT 1");
-            $stmt->execute(['slug' => $segments[1]]);
-            $id = $stmt->fetchColumn();
-            if (!$id) app_fail(404, 'not_found', 'This project was not found.');
-            $items = app_public_collection('projects', $language);
-            foreach ($items as $item) if ($item['slug'] === $segments[1]) app_respond($item);
+            $items = app_public_collection('projects', $language, $segments[1]);
+            if ($items !== []) app_respond($items[0]);
             app_fail(404, 'not_found', 'This project was not found.');
         }
         if (count($segments) !== 1) app_fail(404, 'not_found', 'This resource was not found.');

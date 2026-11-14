@@ -2,7 +2,6 @@ import { ArrowLeft, ArrowRight, ArrowUpLeft, ArrowUpRight, MoveUpRight } from 'l
 import { Link, useParams } from 'react-router';
 import { labels, type Locale, type Project } from '../content';
 import { useSiteContent } from '../lib/SiteContent';
-import { SectionHeading } from '../components/SectionHeading';
 import { ProjectArtwork } from '../components/ProjectArtwork';
 import { ContactForm } from '../components/ContactForm';
 
@@ -80,7 +79,7 @@ export function ProjectDetailPage({ locale }: { locale: Locale }) {
           <h3>{t.project.details}</h3>
           <ul>{content.details.map((detail) => <li key={detail}>{detail}</li>)}</ul>
           {content.note ? <div className="case-note"><span>NOTE / SCOPE</span><p>{content.note}</p></div> : null}
-          <a className="button button--accent case-repository" href={project.githubUrl} target="_blank" rel="noreferrer"><span>{t.project.repository}</span>{locale === 'fa' ? <ArrowUpLeft size={17} /> : <ArrowUpRight size={17} />}</a>
+          {project.githubUrl ? <a className="button button--accent case-repository" href={project.githubUrl} target="_blank" rel="noreferrer"><span>{t.project.repository}</span>{locale === 'fa' ? <ArrowUpLeft size={17} /> : <ArrowUpRight size={17} />}</a> : null}
         </article>
       </div>
       <div className="case-end"><Link className="text-link" to={`/${locale}/projects/`}>{locale === 'fa' ? <ArrowRight size={16} /> : <ArrowLeft size={16} />}{t.project.back}</Link><Link className="text-link" to={`/${locale}/#contact`}>{t.nav.contact}{locale === 'fa' ? <ArrowUpLeft size={16} /> : <ArrowUpRight size={16} />}</Link></div>

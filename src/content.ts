@@ -229,7 +229,6 @@ export const labels = {
     nav: { about: 'درباره', expertise: 'حوزه‌ها', projects: 'پروژه‌ها', experience: 'مسیر', contact: 'ارتباط' },
     hero: {
       greeting: 'سلام، من امیرعلی هستم.',
-      lines: ['ایده‌ها را', 'به سیستم‌های', 'هوشمند تبدیل می‌کنم.'],
       role: 'مهندس هوش مصنوعی / توسعه‌دهنده نرم‌افزار / پژوهشگر علاقه‌مند به هوش مصنوعی پزشکی',
       ctaProjects: 'دیدن پروژه‌ها', ctaContact: 'شروع یک گفت‌وگو', scroll: 'برای کشف بیشتر اسکرول کنید',
       index: 'مستقل می‌سازم؛ با کنجکاوی و دقت.',
@@ -246,7 +245,6 @@ export const labels = {
     about: {
       lead: 'فناوری وقتی معنا پیدا می‌کند که یک ایدهٔ خوب را به تجربه‌ای قابل اتکا برای آدم‌ها تبدیل کند.',
       paragraph: 'به سامانه‌هایی علاقه دارم که دقیق و قابل فهم باشند؛ جایی که مهندسی نرم‌افزار، هوش مصنوعی و نیازهای واقعی به هم می‌رسند. ترجیح می‌دهم محدودیت‌ها روشن باشند و هر ادعا پشتوانه داشته باشد.',
-      portraitLabel: 'تصویر پرتره', portraitNote: 'جای‌نگهدار انتزاعی · قابل جایگزینی از پنل مدیریت',
       educationLabel: 'تحصیلات', educationNote: 'اطلاعات تأییدشده‌ای برای انتشار ثبت نشده است.',
       profileLabel: 'پروفایل', profileNote: 'محتوا با تأیید و ویرایش مستقیم امیرعلی تکمیل می‌شود.',
     },
@@ -264,7 +262,6 @@ export const labels = {
     nav: { about: 'About', expertise: 'Focus', projects: 'Projects', experience: 'Journey', contact: 'Contact' },
     hero: {
       greeting: "Hi, I'm Amirali.",
-      lines: ['Turning Ideas', 'Into Intelligent', 'Systems.'],
       role: 'AI ENGINEERING / SOFTWARE DEVELOPMENT / MEDICAL AI RESEARCH INTERESTS',
       ctaProjects: 'Explore projects', ctaContact: 'Start a conversation', scroll: 'Scroll to explore',
       index: 'Built independently, with curiosity and care.',
@@ -281,7 +278,6 @@ export const labels = {
     about: {
       lead: 'Technology becomes meaningful when a good idea turns into a dependable experience for people.',
       paragraph: 'I am interested in systems that are precise and understandable—where software engineering, artificial intelligence, and real needs meet. I would rather make limitations clear and every claim supportable.',
-      portraitLabel: 'Portrait', portraitNote: 'Abstract placeholder · replaceable from the admin panel',
       educationLabel: 'Education', educationNote: 'No verified details have been provided for publication.',
       profileLabel: 'Profile', profileNote: 'This section is completed through Amirali’s direct review and edits.',
     },

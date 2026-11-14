@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router';
-import { getSeoForPath } from '../lib/seo';
+import { alternateUrls, getSeoForPath, siteUrl } from '../lib/seo';
 import type { Locale } from '../content';
 import { useSiteContent } from '../lib/SiteContent';
 
@@ -44,7 +44,7 @@ export function SeoManager({ locale }: { locale: Locale }) {
       ...(localizedProject ? { title: localizedProject.seoTitle, description: localizedProject.seoDescription, type: 'article' as const } : {}),
     };
     const socialImage = project?.coverUrl || publicSettings.og_image || profile.portraitUrl || '/og-card.svg';
-    const absoluteSocialImage = socialImage.startsWith('/') ? `https://amiralighamkhar.ir${socialImage}` : socialImage;
+    const absoluteSocialImage = siteUrl(socialImage);
 
     document.documentElement.lang = locale;
     document.documentElement.dir = locale === 'fa' ? 'rtl' : 'ltr';
@@ -57,22 +57,13 @@ export function SeoManager({ locale }: { locale: Locale }) {
     setMeta('meta[property="og:locale"]', 'content', locale === 'fa' ? 'fa_IR' : 'en_US');
     setMeta('meta[name="twitter:title"]', 'content', seo.title);
     setMeta('meta[name="twitter:description"]', 'content', seo.description);
-    if (absoluteSocialImage) {
-      setMeta('meta[property="og:image"]', 'content', absoluteSocialImage);
-      setMeta('meta[name="twitter:image"]', 'content', absoluteSocialImage);
-    } else {
-      document.head.querySelector('meta[property="og:image"]')?.remove();
-      document.head.querySelector('meta[name="twitter:image"]')?.remove();
-    }
+    setMeta('meta[property="og:image"]', 'content', absoluteSocialImage);
+    setMeta('meta[name="twitter:image"]', 'content', absoluteSocialImage);
     setLink('canonical', null, seo.canonical);
-    const localePrefix = location.pathname.replace(/^\/(?:fa|en)(?=\/|$)/, '');
-    let normalized = localePrefix ? (localePrefix.startsWith('/') ? localePrefix : `/${localePrefix}`) : '/';
-    if (normalized !== '/' && !normalized.endsWith('/')) normalized += '/';
-    const fa = `https://amiralighamkhar.ir/fa${normalized}`;
-    const en = `https://amiralighamkhar.ir/en${normalized}`;
+    const { fa, en, xDefault } = alternateUrls(location.pathname);
     setLink('alternate', 'fa', fa);
     setLink('alternate', 'en', en);
-    setLink('alternate', 'x-default', fa);
+    setLink('alternate', 'x-default', xDefault);
   }, [location.pathname, locale, profile, projects, publicSettings]);
   return null;
 }

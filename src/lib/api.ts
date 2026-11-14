@@ -1,8 +1,3 @@
-export interface ApiEnvelope<T> {
-  data: T;
-  meta?: Record<string, unknown>;
-}
-
 export class ApiError extends Error {
   status: number;
   code: string;
@@ -47,25 +42,16 @@ export async function apiRequest<T>(path: string, init: RequestInit = {}): Promi
   return payload.data;
 }
 
-export interface PublicTranslationRecord {
+export interface PublicProjectRecord {
+  id?: number;
+  slug: string;
   title?: string;
-  name?: string;
-  role?: string;
-  statement?: string;
-  about?: string;
   summary?: string;
   description?: string;
-  category?: string;
   details?: string[];
   case_study?: string;
   seo_title?: string;
   seo_description?: string;
-  [key: string]: unknown;
-}
-
-export interface PublicProjectRecord extends PublicTranslationRecord {
-  id?: number;
-  slug: string;
   images?: Array<{ id?: number; url: string; alt?: string }>;
   number?: string;
   category?: string;

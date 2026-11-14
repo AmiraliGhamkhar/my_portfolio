@@ -51,21 +51,11 @@ function LocaleLayout() {
   );
 }
 
-function AdminRoute() {
-  const location = useLocation();
-  useLayoutEffect(() => {
-    document.documentElement.lang = 'fa';
-    document.documentElement.dir = 'rtl';
-    document.title = 'مدیریت وب‌سایت — امیرعلی غمخوار';
-  }, [location.pathname]);
-  return <AdminApp />;
-}
-
 export function App() {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/fa/" replace />} />
-      <Route path="/admin/*" element={<AdminRoute />} />
+      <Route path="/admin/*" element={<AdminApp />} />
       <Route path="/:lang" element={<LocaleLayout />}>
         <Route index element={<HomeRoute />} />
         <Route path="projects" element={<ProjectsRoute />} />
@@ -78,12 +68,12 @@ export function App() {
   );
 }
 
-function CurrentLocale() {
+function useCurrentLocale(): Locale {
   const { lang } = useParams<{ lang: string }>();
   return isLocale(lang) ? lang : 'fa';
 }
-function HomeRoute() { const locale = CurrentLocale(); return <HomePage locale={locale} />; }
-function ProjectsRoute() { const locale = CurrentLocale(); return <ProjectsPage locale={locale} />; }
-function ProjectDetailRoute() { const locale = CurrentLocale(); return <ProjectDetailPage locale={locale} />; }
-function ContactRoute() { const locale = CurrentLocale(); return <ContactPage locale={locale} />; }
-function NotFoundRoute() { const locale = CurrentLocale(); return <NotFoundPage locale={locale} />; }
+function HomeRoute() { return <HomePage locale={useCurrentLocale()} />; }
+function ProjectsRoute() { return <ProjectsPage locale={useCurrentLocale()} />; }
+function ProjectDetailRoute() { return <ProjectDetailPage locale={useCurrentLocale()} />; }
+function ContactRoute() { return <ContactPage locale={useCurrentLocale()} />; }
+function NotFoundRoute() { return <NotFoundPage locale={useCurrentLocale()} />; }

@@ -116,11 +116,23 @@ function app_lang(): string
 
 function app_require_same_origin(): void
 {
+    $expected = rtrim((string) app_config('allowed_origin', 'https://amiralighamkhar.ir'), '/');
     $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-    if ($origin === '') return;
-    $expected = (string) app_config('allowed_origin', 'https://amiralighamkhar.ir');
-    if (!hash_equals(rtrim($expected, '/'), rtrim($origin, '/'))) {
-        app_fail(403, 'origin_not_allowed', 'This request origin is not allowed.');
+    if ($origin !== '') {
+        if (!hash_equals($expected, rtrim($origin, '/'))) {
+            app_fail(403, 'origin_not_allowed', 'This request origin is not allowed.');
+        }
+        return;
+    }
+    $referer = $_SERVER['HTTP_REFERER'] ?? '';
+    if ($referer !== '') {
+        $parts = parse_url($referer);
+        $refererOrigin = isset($parts['scheme'], $parts['host'])
+            ? $parts['scheme'] . '://' . $parts['host'] . (isset($parts['port']) ? ':' . $parts['port'] : '')
+            : '';
+        if ($refererOrigin === '' || !hash_equals($expected, $refererOrigin)) {
+            app_fail(403, 'origin_not_allowed', 'This request origin is not allowed.');
+        }
     }
 }
 
@@ -163,20 +175,26 @@ function app_rate_limit(string $bucket, int $limit, int $windowSeconds): void
 {
     $appKey = (string) app_config('app_key', '');
     if (strlen($appKey) < 32) throw new RuntimeException('PORTFOLIO_APP_KEY must be at least 32 characters.');
-    $path = app_storage_dir('rate-limits') . DIRECTORY_SEPARATOR . hash('sha256', $bucket . ':' . app_client_hash()) . '.json';
+    $dir = app_storage_dir('rate-limits');
+    $now = time();
+    if (random_int(1, 50) === 1) {
+        foreach (glob($dir . DIRECTORY_SEPARATOR . '*.json') ?: [] as $stale) {
+            if (($mtime = @filemtime($stale)) !== false && $now - $mtime > max($windowSeconds, 3600)) @unlink($stale);
+        }
+    }
+    $path = $dir . DIRECTORY_SEPARATOR . hash('sha256', $bucket . ':' . app_client_hash()) . '.json';
     $handle = fopen($path, 'c+');
     if ($handle === false) throw new RuntimeException('Rate limit storage is unavailable.');
     try {
         if (!flock($handle, LOCK_EX)) throw new RuntimeException('Rate limiter could not lock storage.');
         $raw = stream_get_contents($handle);
         $record = is_string($raw) && $raw !== '' ? json_decode($raw, true) : null;
-        $now = time();
         if (!is_array($record) || !isset($record['start'], $record['count']) || $now - (int) $record['start'] >= $windowSeconds) {
             $record = ['start' => $now, 'count' => 0];
         }
         if ((int) $record['count'] >= $limit) {
             $retry = max(1, $windowSeconds - ($now - (int) $record['start']));
-            header('Retry-After: ' . $retry);
+            if (PHP_SAPI !== 'cli' && !headers_sent()) header('Retry-After: ' . $retry);
             app_fail(429, 'rate_limited', 'Too many requests. Please wait and try again.');
         }
         $record['count'] = (int) $record['count'] + 1;
@@ -207,6 +225,52 @@ function app_admin(): array
         'email' => (string) $user['email'],
         'display_name' => (string) $user['display_name'],
     ];
+}
+
+function app_split_sql_statements(string $sql): array
+{
+    $statements = [];
+    $buffer = '';
+    $quote = null;
+    $escaped = false;
+    $length = strlen($sql);
+    for ($i = 0; $i < $length; $i++) {
+        $char = $sql[$i];
+        $next = $i + 1 < $length ? $sql[$i + 1] : '';
+        if ($quote !== null) {
+            $buffer .= $char;
+            if ($escaped) {
+                $escaped = false;
+                continue;
+            }
+            if ($char === '\\' && $quote !== '`') {
+                $escaped = true;
+                continue;
+            }
+            if ($char === $quote) {
+                if ($next === $quote && $quote !== '`') {
+                    $buffer .= $next;
+                    $i++;
+                } else {
+                    $quote = null;
+                }
+            }
+            continue;
+        }
+        if ($char === "'" || $char === '"' || $char === '`') {
+            $quote = $char;
+            $buffer .= $char;
+            continue;
+        }
+        if ($char === ';') {
+            if (trim($buffer) !== '') $statements[] = trim($buffer);
+            $buffer = '';
+            continue;
+        }
+        $buffer .= $char;
+    }
+    if (trim($buffer) !== '') $statements[] = trim($buffer);
+    return $statements;
 }
 
 set_exception_handler(static function (Throwable $error): void {

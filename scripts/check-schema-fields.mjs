@@ -46,7 +46,7 @@ function assertColumn(tableName, columnName, validatorType, context) {
   if (textWidth) {
     assert.equal(column.type, 'VARCHAR', `${context}: ${tableName}.${columnName} is VARCHAR`);
     assert.equal(column.width, Number(textWidth), `${context}: PHP text limit matches ${tableName}.${columnName}`);
-    assert.match(php, new RegExp(`['"]text_${textWidth}['"]\\s*=>\\s*app_safe_text\\(\\$value \\?\\? '', ${textWidth}\\)`), `text_${textWidth} has a matching validator`);
+    assert.match(php, /preg_match\('\/\^text_\(\\d\+\)\$\/',\s*\$type,\s*\$matches\)\)\s*return app_safe_text\(\$value \?\? '', \(int\) \$matches\[1\]\)/, `text_${textWidth} has a matching validator`);
     return;
   }
   switch (validatorType) {

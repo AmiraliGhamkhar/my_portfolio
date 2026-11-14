@@ -13,7 +13,7 @@ type AnyRecord = Record<string, any>;
 type TranslationMap = { fa: AnyRecord; en: AnyRecord };
 
 interface AdminUser { id: number; email: string; display_name: string; }
-interface FieldDefinition { key: string; label: Record<AdminLocale, string>; type?: 'text' | 'textarea' | 'url' | 'number' | 'select' | 'checkbox' | 'list' | 'email' | 'password'; options?: Array<{ value: string; label: Record<AdminLocale, string> }>; hint?: Record<AdminLocale, string>; required?: boolean; }
+interface FieldDefinition { key: string; label: Record<AdminLocale, string>; type?: 'text' | 'textarea' | 'url' | 'number' | 'select' | 'checkbox' | 'list' | 'email'; options?: Array<{ value: string; label: Record<AdminLocale, string> }>; hint?: Record<AdminLocale, string>; required?: boolean; }
 interface ResourceDefinition { label: Record<AdminLocale, string>; singular: Record<AdminLocale, string>; base: FieldDefinition[]; translation: FieldDefinition[]; titleField: string; }
 
 const ui = {
@@ -21,25 +21,25 @@ const ui = {
     signIn: 'ورود به پنل مدیریت', signInHint: 'برای ادامه، با حساب مدیر وارد شوید.', email: 'ایمیل مدیر', password: 'گذرواژه', signInAction: 'ورود امن', signingIn: 'در حال ورود…',
     apiUnavailable: 'ارتباط با API برقرار نشد. تنظیم PHP و پایگاه‌داده را بررسی کنید.', loginFailed: 'ایمیل یا گذرواژه صحیح نیست؛ دوباره تلاش کنید.',
     dashboard: 'نمای کلی', profile: 'پروفایل و معرفی', projects: 'پروژه‌ها', expertise: 'حوزه‌های تخصصی', technologies: 'فناوری‌ها', experience: 'تجربه', education: 'تحصیلات', research: 'پژوهش', publications: 'انتشارات', achievements: 'دستاوردها', messages: 'پیام‌ها', social: 'پیوندهای اجتماعی', media: 'کتابخانهٔ رسانه', settings: 'تنظیمات و سئو', security: 'حساب و امنیت',
-    logout: 'خروج', search: 'جست‌وجو…', new: 'افزودن', edit: 'ویرایش', delete: 'حذف', save: 'ذخیره', saving: 'در حال ذخیره…', cancel: 'لغو', noItems: 'هنوز موردی ثبت نشده است.', noResults: 'موردی با این جست‌وجو پیدا نشد.', confirmDelete: 'برای حذف این مورد مطمئن هستید؟ این کار قابل بازگشت نیست.', saved: 'تغییرات ذخیره شد.', deleted: 'مورد حذف شد.', publish: 'وضعیت انتشار', draft: 'پیش‌نویس', published: 'منتشرشده', visible: 'نمایش', hidden: 'پنهان', order: 'ترتیب نمایش', language: 'زبان ویرایش', fa: 'فارسی', en: 'English',
-    count: 'تعداد', unread: 'پیام‌های خوانده‌نشده', recent: 'پیام‌های تازه', open: 'باز کردن', markRead: 'خوانده شد', archive: 'بایگانی', message: 'متن پیام', sentAt: 'زمان دریافت', from: 'از',
+    logout: 'خروج', search: 'جست‌وجو…', new: 'افزودن', edit: 'ویرایش', delete: 'حذف', save: 'ذخیره', saving: 'در حال ذخیره…', cancel: 'لغو', noItems: 'هنوز موردی ثبت نشده است.', noResults: 'موردی با این جست‌وجو پیدا نشد.', confirmDelete: 'برای حذف این مورد مطمئن هستید؟ این کار قابل بازگشت نیست.', saved: 'تغییرات ذخیره شد.', deleted: 'مورد حذف شد.', draft: 'پیش‌نویس', published: 'منتشرشده', visible: 'نمایش', hidden: 'پنهان', language: 'زبان ویرایش',
+    count: 'تعداد', unread: 'پیام‌های خوانده‌نشده', recent: 'پیام‌های تازه', open: 'باز کردن', markRead: 'خوانده شد', archive: 'بایگانی', sentAt: 'زمان دریافت',
     upload: 'بارگذاری تصویر', uploading: 'در حال بارگذاری…', uploadHint: 'JPEG، PNG، WebP یا AVIF · حداکثر ۶ مگابایت', chooseFile: 'انتخاب تصویر', noMedia: 'هنوز تصویری بارگذاری نشده است.', copyUrl: 'کپی نشانی', imageAlt: 'متن جایگزین تصویر', gallery: 'گالری پروژه', addImage: 'افزودن تصویر به گالری', chooseMedia: 'انتخاب رسانه', noGallery: 'تصویری در گالری نیست.',
     profileSaved: 'پروفایل ذخیره شد.', greeting: 'سلام و معرفی', statement: 'عنوان اصلی', role: 'عنوان حرفه‌ای', about: 'درباره', name: 'نام', emailContact: 'ایمیل عمومی', github: 'نشانی گیت‌هاب', linkedin: 'نشانی لینکدین', portrait: 'نشانی تصویر پرتره', portraitMedia: 'شناسهٔ رسانهٔ پرتره',
     passwordCurrent: 'گذرواژهٔ فعلی', passwordNew: 'گذرواژهٔ جدید', passwordConfirm: 'تکرار گذرواژهٔ جدید', updatePassword: 'به‌روزرسانی گذرواژه', passwordChanged: 'گذرواژه تغییر کرد.', passwordMismatch: 'گذرواژه‌های جدید یکسان نیستند.', passwordRule: 'حداقل ۱۲ نویسه و حداکثر ۷۲ بایت UTF-8 انتخاب کنید.',
-    settingsTitle: 'تنظیمات عمومی', settingKey: 'کلید تنظیم', settingValue: 'مقدار', addSetting: 'افزودن تنظیم', saveSettings: 'ذخیره تنظیمات', defaultLocale: 'زبان پیش‌فرض', seoTitle: 'عنوان سئو', seoDescription: 'توضیحات سئو',
-    unavailable: 'خدمت مدیریت فعلاً در دسترس نیست.', loading: 'در حال بارگذاری…', admin: 'مدیریت محتوا', site: 'وب‌سایت', menu: 'باز کردن منو', close: 'بستن', online: 'اتصال امن', recordId: 'شناسه', status: 'وضعیت', categories: 'دسته', details: 'جزئیات / هر خط یک مورد', technologiesField: 'شناسهٔ فناوری‌ها، با ویرگول جدا شود', slug: 'نامک (لاتین)', icon: 'شناسهٔ آیکون', cover: 'نشانی تصویر کاور', githubUrl: 'پیوند GitHub', liveUrl: 'دموی زنده', videoUrl: 'ویدیو', featured: 'پروژهٔ منتخب', startDate: 'از', endDate: 'تا', organization: 'سازمان / مؤسسه', institution: 'دانشگاه / مؤسسه', location: 'مکان', kind: 'نوع', issuer: 'صادرکننده', issuerUrl: 'پیوند صادرکننده', awardedAt: 'تاریخ', doi: 'DOI', abstract: 'چکیده', authors: 'نویسندگان', venue: 'نشریه / رویداد', url: 'نشانی پیوند', platform: 'پلتفرم', label: 'عنوان نمایشی', visibleOnSite: 'نمایش در وب‌سایت', categoryKey: 'کلید دسته', publishedAt: 'زمان انتشار', chooseLanguage: 'انتخاب زبان پنل', saveError: 'ذخیره انجام نشد. داده‌ها را بررسی کنید و دوباره تلاش کنید.',
+    settingsTitle: 'تنظیمات عمومی', saveSettings: 'ذخیره تنظیمات', seoTitle: 'عنوان سئو', seoDescription: 'توضیحات سئو',
+    unavailable: 'خدمت مدیریت فعلاً در دسترس نیست.', loading: 'در حال بارگذاری…', admin: 'مدیریت محتوا', site: 'وب‌سایت', menu: 'باز کردن منو', close: 'بستن', online: 'اتصال امن', details: 'جزئیات / هر خط یک مورد', saveError: 'ذخیره انجام نشد. داده‌ها را بررسی کنید و دوباره تلاش کنید.',
   },
   en: {
     signIn: 'Sign in to the CMS', signInHint: 'Use the administrator account to continue.', email: 'Administrator email', password: 'Password', signInAction: 'Sign in securely', signingIn: 'Signing in…',
     apiUnavailable: 'The API could not be reached. Check the PHP and database configuration.', loginFailed: 'The email or password is incorrect. Try again.',
     dashboard: 'Overview', profile: 'Profile & hero', projects: 'Projects', expertise: 'Expertise', technologies: 'Technologies', experience: 'Experience', education: 'Education', research: 'Research', publications: 'Publications', achievements: 'Achievements', messages: 'Messages', social: 'Social links', media: 'Media library', settings: 'Settings & SEO', security: 'Account & security',
-    logout: 'Sign out', search: 'Search…', new: 'Add new', edit: 'Edit', delete: 'Delete', save: 'Save changes', saving: 'Saving…', cancel: 'Cancel', noItems: 'Nothing has been added yet.', noResults: 'No results match this search.', confirmDelete: 'Delete this item? This action cannot be undone.', saved: 'Changes saved.', deleted: 'Item deleted.', publish: 'Publication status', draft: 'Draft', published: 'Published', visible: 'Visible', hidden: 'Hidden', order: 'Display order', language: 'Editing language', fa: 'فارسی', en: 'English',
-    count: 'Total', unread: 'Unread messages', recent: 'Recent messages', open: 'Open', markRead: 'Mark read', archive: 'Archive', message: 'Message', sentAt: 'Received', from: 'From',
+    logout: 'Sign out', search: 'Search…', new: 'Add new', edit: 'Edit', delete: 'Delete', save: 'Save changes', saving: 'Saving…', cancel: 'Cancel', noItems: 'Nothing has been added yet.', noResults: 'No results match this search.', confirmDelete: 'Delete this item? This action cannot be undone.', saved: 'Changes saved.', deleted: 'Item deleted.', draft: 'Draft', published: 'Published', visible: 'Visible', hidden: 'Hidden', language: 'Editing language',
+    count: 'Total', unread: 'Unread messages', recent: 'Recent messages', open: 'Open', markRead: 'Mark read', archive: 'Archive', sentAt: 'Received',
     upload: 'Upload image', uploading: 'Uploading…', uploadHint: 'JPEG, PNG, WebP, or AVIF · up to 6 MB', chooseFile: 'Choose image', noMedia: 'No images uploaded yet.', copyUrl: 'Copy URL', imageAlt: 'Image alternative text', gallery: 'Project gallery', addImage: 'Add image to gallery', chooseMedia: 'Choose media', noGallery: 'No gallery images yet.',
     profileSaved: 'Profile saved.', greeting: 'Greeting', statement: 'Main statement', role: 'Professional title', about: 'About', name: 'Name', emailContact: 'Public email', github: 'GitHub URL', linkedin: 'LinkedIn URL', portrait: 'Portrait URL', portraitMedia: 'Portrait media ID',
     passwordCurrent: 'Current password', passwordNew: 'New password', passwordConfirm: 'Confirm new password', updatePassword: 'Update password', passwordChanged: 'Password updated.', passwordMismatch: 'The new passwords do not match.', passwordRule: 'Choose at least 12 characters, using no more than 72 UTF-8 bytes.',
-    settingsTitle: 'General settings', settingKey: 'Setting key', settingValue: 'Value', addSetting: 'Add setting', saveSettings: 'Save settings', defaultLocale: 'Default language', seoTitle: 'SEO title', seoDescription: 'SEO description',
-    unavailable: 'The admin service is currently unavailable.', loading: 'Loading…', admin: 'Content management', site: 'Website', menu: 'Open menu', close: 'Close', online: 'Secure session', recordId: 'ID', status: 'Status', categories: 'Category', details: 'Details / one per line', technologiesField: 'Technology slugs, comma-separated', slug: 'Slug (lowercase)', icon: 'Icon key', cover: 'Cover image URL', githubUrl: 'GitHub URL', liveUrl: 'Live demo', videoUrl: 'Video URL', featured: 'Featured project', startDate: 'From', endDate: 'To', organization: 'Organization', institution: 'Institution', location: 'Location', kind: 'Type', issuer: 'Issuer', issuerUrl: 'Issuer URL', awardedAt: 'Date', doi: 'DOI', abstract: 'Abstract', authors: 'Authors', venue: 'Venue / event', url: 'URL', platform: 'Platform', label: 'Display label', visibleOnSite: 'Visible on website', categoryKey: 'Category key', publishedAt: 'Publication date', chooseLanguage: 'Admin language', saveError: 'Could not save. Check the fields and try again.',
+    settingsTitle: 'General settings', saveSettings: 'Save settings', seoTitle: 'SEO title', seoDescription: 'SEO description',
+    unavailable: 'The admin service is currently unavailable.', loading: 'Loading…', admin: 'Content management', site: 'Website', menu: 'Open menu', close: 'Close', online: 'Secure session', details: 'Details / one per line', saveError: 'Could not save. Check the fields and try again.',
   },
 } as const;
 
@@ -234,8 +234,6 @@ export function AdminApp() {
   if (phase === 'loading') return <div className="admin-state" dir={locale === 'fa' ? 'rtl' : 'ltr'}><LoaderCircle className="spin" size={25} /><span>{t.loading}</span></div>;
   if (phase !== 'signed-in' || !user) return <LoginScreen locale={locale} onLogin={onLogin} unavailable={phase === 'unavailable'} onLocale={toggleLocale} />;
 
-  const activeModule = modules.find((item) => item.id === module)!;
-  const ActiveIcon = activeModule.icon;
   const title = t[moduleLabels[module]];
   return (
     <div className={`admin-shell admin-shell--${locale}`} dir={locale === 'fa' ? 'rtl' : 'ltr'} lang={locale}>
@@ -274,7 +272,7 @@ export function AdminApp() {
           {module === 'messages' ? <MessagesPane locale={locale} csrf={csrf} notify={notify} /> : null}
           {module === 'media' ? <MediaPane locale={locale} csrf={csrf} notify={notify} /> : null}
           {module === 'settings' ? <SettingsPane locale={locale} csrf={csrf} notify={notify} /> : null}
-          {module === 'security' ? <SecurityPane locale={locale} csrf={csrf} notify={notify} /> : null}
+          {module === 'security' ? <SecurityPane locale={locale} csrf={csrf} onCsrfRotate={setCsrf} notify={notify} /> : null}
         </main>
         <footer className="admin-footer"><span>AG / CMS</span><span>{locale === 'fa' ? 'محتوا با ویرایش مستقل فارسی و انگلیسی' : 'Independent Persian and English content'}</span></footer>
       </div>
@@ -389,10 +387,13 @@ function ResourcePane({ module, locale, csrf, notify }: { module: ModuleId; loca
   }, [module, locale, notify]);
   useEffect(() => { void load(); }, [load]);
 
-  const openNew = () => { setEditing(makeDefaultRecord(module)); setBase(makeDefaultRecord(module)); setTranslations(blankTranslations()); setEditLocale(locale); };
+  const openNew = () => { const defaults = makeDefaultRecord(module); setEditing(defaults); setBase({ ...defaults }); setTranslations(blankTranslations()); setEditLocale(locale); };
   const openEdit = (record: AnyRecord) => {
-    const copy = { ...record };
-    setEditing(copy); setBase({ ...record }); setTranslations({ fa: { ...(record.translations?.fa ?? {}) }, en: { ...(record.translations?.en ?? {}) } }); setEditLocale(locale);
+    const nextBase = { ...record };
+    if (module === 'projects' && Array.isArray(nextBase.technologies)) {
+      nextBase.technologies = nextBase.technologies.join(', ');
+    }
+    setEditing({ ...record }); setBase(nextBase); setTranslations({ fa: { ...(record.translations?.fa ?? {}) }, en: { ...(record.translations?.en ?? {}) } }); setEditLocale(locale);
   };
   const closeEditor = () => { setEditing(null); setBase({}); setTranslations(blankTranslations()); };
   const changeBase = (key: string, value: unknown) => setBase((current) => ({ ...current, [key]: value }));
@@ -401,11 +402,19 @@ function ResourcePane({ module, locale, csrf, notify }: { module: ModuleId; loca
   const save = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); if (saving) return; setSaving(true);
     try {
-      const selectedTranslation = { ...translations[editLocale] };
-      definition.translation.forEach((field) => {
-        if (field.type === 'list' && typeof selectedTranslation[field.key] === 'string') selectedTranslation[field.key] = selectedTranslation[field.key].split('\n').map((item: string) => item.trim()).filter(Boolean);
+      const serializedTranslations: Partial<TranslationMap> = {};
+      (['fa', 'en'] as const).forEach((lang) => {
+        const currentLang = { ...translations[lang] };
+        definition.translation.forEach((field) => {
+          if (field.type === 'list' && typeof currentLang[field.key] === 'string') {
+            currentLang[field.key] = currentLang[field.key].split('\n').map((item: string) => item.trim()).filter(Boolean);
+          }
+        });
+        if (lang === editLocale || Object.values(currentLang).some((v) => (Array.isArray(v) ? v.length > 0 : Boolean(v)))) {
+          serializedTranslations[lang] = currentLang;
+        }
       });
-      const payload: AnyRecord = { base, translations: { [editLocale]: selectedTranslation } };
+      const payload: AnyRecord = { base, translations: serializedTranslations };
       if (module === 'projects') payload.technologies = String(base.technologies || '').split(',').map((value) => value.trim()).filter(Boolean);
       const id = editing?.id;
       const result = await apiRequest<AnyRecord>(id ? `/api/v1/admin/${module}/${id}` : `/api/v1/admin/${module}`, {
@@ -483,16 +492,20 @@ function ProfilePane({ locale, csrf, notify }: { locale: AdminLocale; csrf: stri
   const [profile, setProfile] = useState<AnyRecord | null>(null);
   const [base, setBase] = useState<AnyRecord>({});
   const [translations, setTranslations] = useState<TranslationMap>(blankTranslations());
+  const [dirtyLocales, setDirtyLocales] = useState<Record<AdminLocale, boolean>>({ fa: false, en: false });
   const [editLocale, setEditLocale] = useState<AdminLocale>(locale);
   const [saving, setSaving] = useState(false);
   useEffect(() => {
-    apiRequest<AnyRecord>('/api/v1/admin/profile').then((record) => { setProfile(record); setBase(record); setTranslations({ fa: { ...(record.translations?.fa ?? {}) }, en: { ...(record.translations?.en ?? {}) } }); }).catch((error) => notify(messageFromError(error, locale), 'error'));
+    apiRequest<AnyRecord>('/api/v1/admin/profile').then((record) => { setProfile(record); setBase(record); setTranslations({ fa: { ...(record.translations?.fa ?? {}) }, en: { ...(record.translations?.en ?? {}) } }); setDirtyLocales({ fa: false, en: false }); }).catch((error) => notify(messageFromError(error, locale), 'error'));
   }, [locale, notify]);
   const save = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); setSaving(true);
     try {
-      const result = await apiRequest<AnyRecord>('/api/v1/admin/profile', { method: 'PATCH', headers: { 'X-CSRF-Token': csrf }, body: JSON.stringify({ base, translations: { [editLocale]: translations[editLocale] } }) });
-      setProfile(result); setBase(result); setTranslations({ fa: { ...(result.translations?.fa ?? {}) }, en: { ...(result.translations?.en ?? {}) } }); notify(t.profileSaved);
+      const payloadTranslations: Partial<TranslationMap> = { [editLocale]: translations[editLocale] };
+      const other: AdminLocale = editLocale === 'fa' ? 'en' : 'fa';
+      if (dirtyLocales[other]) payloadTranslations[other] = translations[other];
+      const result = await apiRequest<AnyRecord>('/api/v1/admin/profile', { method: 'PATCH', headers: { 'X-CSRF-Token': csrf }, body: JSON.stringify({ base, translations: payloadTranslations }) });
+      setProfile(result); setBase(result); setTranslations({ fa: { ...(result.translations?.fa ?? {}) }, en: { ...(result.translations?.en ?? {}) } }); setDirtyLocales({ fa: false, en: false }); notify(t.profileSaved);
     } catch (error) { notify(messageFromError(error, locale), 'error'); }
     finally { setSaving(false); }
   };
@@ -516,7 +529,7 @@ function ProfilePane({ locale, csrf, notify }: { locale: AdminLocale; csrf: stri
     <div className="admin-pane"><PageTitle title={t.profile} subtitle={locale === 'fa' ? 'اطلاعات صاحب وب‌سایت، معرفی و متن‌های سئو.' : 'Owner details, hero content, and SEO metadata.'} />
       {!profile ? <div className="admin-empty"><LoaderCircle className="spin" size={20} /><span>{t.loading}</span></div> : <form className="admin-profile-form" onSubmit={save}>
         <section className="admin-panel"><div className="admin-panel__heading"><div><span className="admin-panel__index">01 / SHARED</span><h2>{locale === 'fa' ? 'اطلاعات مشترک' : 'Shared information'}</h2></div></div><div className="admin-form-grid">{fieldsBase.map((field) => <AdminField key={field.key} field={field} locale={locale} value={base[field.key]} onChange={(value) => setBase((current) => ({ ...current, [field.key]: value }))} />)}</div></section>
-        <section className="admin-panel"><div className="admin-panel__heading"><div><span className="admin-panel__index">02 / BILINGUAL</span><h2>{locale === 'fa' ? 'معرفی دو‌زبانه' : 'Bilingual profile'}</h2></div><div className="admin-language-tabs"><button type="button" className={editLocale === 'fa' ? 'is-active' : ''} onClick={() => setEditLocale('fa')}>فارسی <i>FA</i></button><button type="button" className={editLocale === 'en' ? 'is-active' : ''} onClick={() => setEditLocale('en')}>English <i>EN</i></button></div></div><div className="admin-form-grid">{fieldsTranslation.map((field) => <AdminField key={field.key} field={field} locale={editLocale} value={translations[editLocale][field.key]} onChange={(value) => setTranslations((current) => ({ ...current, [editLocale]: { ...current[editLocale], [field.key]: value } }))} />)}</div></section>
+        <section className="admin-panel"><div className="admin-panel__heading"><div><span className="admin-panel__index">02 / BILINGUAL</span><h2>{locale === 'fa' ? 'معرفی دو‌زبانه' : 'Bilingual profile'}</h2></div><div className="admin-language-tabs"><button type="button" className={editLocale === 'fa' ? 'is-active' : ''} onClick={() => setEditLocale('fa')}>فارسی <i>FA</i></button><button type="button" className={editLocale === 'en' ? 'is-active' : ''} onClick={() => setEditLocale('en')}>English <i>EN</i></button></div></div><div className="admin-form-grid">{fieldsTranslation.map((field) => <AdminField key={field.key} field={field} locale={editLocale} value={translations[editLocale][field.key]} onChange={(value) => { setDirtyLocales((d) => ({ ...d, [editLocale]: true })); setTranslations((current) => ({ ...current, [editLocale]: { ...current[editLocale], [field.key]: value } })); }} />)}</div></section>
         <div className="admin-form-submit"><span>{locale === 'fa' ? `در حال ویرایش: ${editLocale === 'fa' ? 'فارسی' : 'English'}` : `Editing: ${editLocale === 'fa' ? 'Persian' : 'English'}`}</span><button className="admin-primary-button" type="submit" disabled={saving}>{saving ? <LoaderCircle className="spin" size={16} /> : <Check size={16} />}{saving ? t.saving : t.save}</button></div>
       </form>}
     </div>
@@ -606,7 +619,7 @@ function MediaPane({ locale, csrf, notify }: { locale: AdminLocale; csrf: string
   const copyUrl = async (url: string) => { try { await navigator.clipboard.writeText(url); notify(t.copyUrl); } catch { notify(url, 'error'); } };
   return <div className="admin-pane"><PageTitle title={t.media} subtitle={t.uploadHint} />
     <form className="admin-upload" onSubmit={upload}><div className="admin-upload__icon"><Upload size={21} /></div><div className="admin-upload__copy"><b>{t.upload}</b><span>{t.uploadHint}</span></div><label className="admin-secondary-button admin-file-button"><input name="image" type="file" accept="image/jpeg,image/png,image/webp,image/avif" required />{t.chooseFile}</label><button className="admin-primary-button" disabled={uploading}>{uploading ? <LoaderCircle className="spin" size={16} /> : <Upload size={16} />}{uploading ? t.uploading : t.upload}</button></form>
-    {loading ? <div className="admin-empty"><LoaderCircle className="spin" size={20} /><span>{t.loading}</span></div> : items.length ? <div className="admin-media-grid">{items.map((item) => <article className="admin-media-card" key={item.id}><div className="admin-media-card__image"><img src={item.public_url} alt={activeLocale === 'fa' ? item.alt_fa : item.alt_en} loading="lazy" /><span>#{item.id} / {item.mime_type.replace('image/', '').toUpperCase()}</span></div><div className="admin-media-card__body"><div className="admin-language-tabs admin-language-tabs--small"><button className={activeLocale === 'fa' ? 'is-active' : ''} onClick={() => setActiveLocale('fa')} type="button">FA</button><button className={activeLocale === 'en' ? 'is-active' : ''} onClick={() => setActiveLocale('en')} type="button">EN</button></div><form onSubmit={(event) => { event.preventDefault(); const input = (event.currentTarget.elements.namedItem('alt') as HTMLInputElement); void saveAlt(item, activeLocale, input.value); }}><label className="admin-field"><span>{t.imageAlt}</span><input name="alt" defaultValue={activeLocale === 'fa' ? item.alt_fa : item.alt_en} /></label><button className="admin-secondary-button admin-secondary-button--small" type="submit">{t.save}</button></form><div className="admin-media-card__url"><code dir="ltr">{item.public_url}</code><button type="button" onClick={() => void copyUrl(item.public_url)} aria-label={t.copyUrl}><Link2 size={14} /></button></div><div className="admin-media-card__foot"><small>{(Number(item.size_bytes) / 1024).toFixed(0)} KB · {item.original_name}</small><button className="admin-icon-button is-danger" type="button" onClick={() => void remove(item)} aria-label={t.delete}><Trash2 size={15} /></button></div></div></article>)}</div> : <div className="admin-empty"><Images size={25} /><b>{t.noMedia}</b></div>}
+    {loading ? <div className="admin-empty"><LoaderCircle className="spin" size={20} /><span>{t.loading}</span></div> : items.length ? <div className="admin-media-grid">{items.map((item) => <article className="admin-media-card" key={item.id}><div className="admin-media-card__image"><img src={item.public_url} alt={activeLocale === 'fa' ? item.alt_fa : item.alt_en} loading="lazy" /><span>#{item.id} / {item.mime_type.replace('image/', '').toUpperCase()}</span></div><div className="admin-media-card__body"><div className="admin-language-tabs admin-language-tabs--small"><button className={activeLocale === 'fa' ? 'is-active' : ''} onClick={() => setActiveLocale('fa')} type="button">FA</button><button className={activeLocale === 'en' ? 'is-active' : ''} onClick={() => setActiveLocale('en')} type="button">EN</button></div><form key={`${item.id}-${activeLocale}`} onSubmit={(event) => { event.preventDefault(); const input = (event.currentTarget.elements.namedItem('alt') as HTMLInputElement); void saveAlt(item, activeLocale, input.value); }}><label className="admin-field"><span>{t.imageAlt}</span><input name="alt" defaultValue={activeLocale === 'fa' ? item.alt_fa : item.alt_en} /></label><button className="admin-secondary-button admin-secondary-button--small" type="submit">{t.save}</button></form><div className="admin-media-card__url"><code dir="ltr">{item.public_url}</code><button type="button" onClick={() => void copyUrl(item.public_url)} aria-label={t.copyUrl}><Link2 size={14} /></button></div><div className="admin-media-card__foot"><small>{(Number(item.size_bytes) / 1024).toFixed(0)} KB · {item.original_name}</small><button className="admin-icon-button is-danger" type="button" onClick={() => void remove(item)} aria-label={t.delete}><Trash2 size={15} /></button></div></div></article>)}</div> : <div className="admin-empty"><Images size={25} /><b>{t.noMedia}</b></div>}
   </div>;
 }
 
@@ -615,7 +628,18 @@ function SettingsPane({ locale, csrf, notify }: { locale: AdminLocale; csrf: str
   const [settings, setSettings] = useState<AnyRecord>({ default_locale: 'fa', global_seo_title_fa: '', global_seo_title_en: '', global_seo_description_fa: '', global_seo_description_en: '', og_image: '' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  useEffect(() => { apiRequest<{ items: AnyRecord[] }>('/api/v1/admin/settings').then((result) => { const mapped = { ...settings }; result.items.forEach((item) => { mapped[item.setting_key] = item.value; }); setSettings(mapped); }).catch((error) => notify(messageFromError(error, locale), 'error')).finally(() => setLoading(false)); }, []);
+  useEffect(() => {
+    apiRequest<{ items: AnyRecord[] }>('/api/v1/admin/settings')
+      .then((result) => {
+        setSettings((current) => {
+          const mapped = { ...current };
+          result.items.forEach((item) => { mapped[item.setting_key] = item.value; });
+          return mapped;
+        });
+      })
+      .catch((error) => notify(messageFromError(error, locale), 'error'))
+      .finally(() => setLoading(false));
+  }, [locale, notify]);
   const fields: FieldDefinition[] = [
     { key: 'global_seo_title_fa', label: { fa: 'عنوان سئو — فارسی', en: 'SEO title — Persian' } },
     { key: 'global_seo_title_en', label: { fa: 'عنوان سئو — انگلیسی', en: 'SEO title — English' } },
@@ -632,7 +656,7 @@ function SettingsPane({ locale, csrf, notify }: { locale: AdminLocale; csrf: str
   return <div className="admin-pane"><PageTitle title={t.settings} subtitle={t.settingsTitle} />{loading ? <div className="admin-empty"><LoaderCircle className="spin" size={20} /><span>{t.loading}</span></div> : <form className="admin-panel admin-settings" onSubmit={save}><div className="admin-form-grid">{fields.map((field) => <AdminField key={field.key} field={field} locale={locale} value={settings[field.key] ?? ''} onChange={(value) => setSettings((current) => ({ ...current, [field.key]: value }))} />)}</div><div className="admin-form-submit"><span>{locale === 'fa' ? 'تنظیمات سئو برای فرادادهٔ عمومی استفاده می‌شوند.' : 'SEO settings provide the public site metadata defaults.'}</span><button className="admin-primary-button" disabled={saving}>{saving ? <LoaderCircle className="spin" size={16} /> : <Check size={16} />}{saving ? t.saving : t.saveSettings}</button></div></form>}</div>;
 }
 
-function SecurityPane({ locale, csrf, notify }: { locale: AdminLocale; csrf: string; notify: (text: string, kind?: 'success' | 'error') => void }) {
+function SecurityPane({ locale, csrf, onCsrfRotate, notify }: { locale: AdminLocale; csrf: string; onCsrfRotate: (token: string) => void; notify: (text: string, kind?: 'success' | 'error') => void }) {
   const t = useAdminText(locale);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -641,7 +665,7 @@ function SecurityPane({ locale, csrf, notify }: { locale: AdminLocale; csrf: str
     if (Array.from(next).length < 12 || new TextEncoder().encode(next).length > 72) { setError(t.passwordRule); return; }
     if (next !== confirm) { setError(t.passwordMismatch); return; }
     setBusy(true);
-    try { const result = await apiRequest<{ csrf_token: string }>('/api/v1/admin/security/password', { method: 'POST', headers: { 'X-CSRF-Token': csrf }, body: JSON.stringify({ current_password: current, new_password: next }) }); form.reset(); notify(t.passwordChanged); if (result.csrf_token) window.location.reload(); }
+    try { const result = await apiRequest<{ csrf_token: string }>('/api/v1/admin/security/password', { method: 'POST', headers: { 'X-CSRF-Token': csrf }, body: JSON.stringify({ current_password: current, new_password: next }) }); form.reset(); if (result.csrf_token) onCsrfRotate(result.csrf_token); notify(t.passwordChanged); }
     catch (failure) { setError(failure instanceof ApiError && failure.status === 403 ? (locale === 'fa' ? 'گذرواژهٔ فعلی اشتباه است.' : 'Current password is incorrect.') : messageFromError(failure, locale)); }
     finally { setBusy(false); }
   };

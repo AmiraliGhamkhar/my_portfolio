@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { ArrowUpLeft, ArrowUpRight, Check, Send } from 'lucide-react';
+import { ArrowUpLeft, ArrowUpRight, Check } from 'lucide-react';
 import { apiRequest, getCsrfToken } from '../lib/api';
 import { labels, type Locale } from '../content';
 

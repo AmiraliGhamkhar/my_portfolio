@@ -65,14 +65,47 @@ test('empty API collections preserve the verified static fallback content', asyn
 });
 
 test('SEO image selection prioritizes CMS Open Graph settings and resolves local uploads', async () => {
-  const seo = await read('src/components/SeoManager.tsx');
-  assert.match(seo, /project\?\.coverUrl \|\| publicSettings\.og_image \|\| profile\.portraitUrl/);
-  assert.match(seo, /socialImage\.startsWith\('\/'\) \? `https:\/\/amiralighamkhar\.ir\$\{socialImage\}`/);
+  const seoManager = await read('src/components/SeoManager.tsx');
+  const seoLib = await read('src/lib/seo.ts');
+  assert.match(seoManager, /project\?\.coverUrl \|\| publicSettings\.og_image \|\| profile\.portraitUrl/);
+  assert.match(seoManager, /siteUrl\(socialImage\)/);
+  assert.match(seoLib, /\$\{ORIGIN\}\$\{path\.startsWith\('\/'\) \? path : `\/\$\{path\}`\}/);
 });
 
 test('project technology editing uses slugs and public lists hide draft technologies', async () => {
   const api = await read('backend/src/router.php');
-  assert.match(api, /app_record_technologies\(\$id, 'en', true\)/);
-  assert.match(api, /app_record_technologies\(\(int\) \$row\['id'\], \$language, false, true\)/);
-  assert.match(api, /\$publishedOnly \? " AND tech\.status='published'"/);
+  assert.match(api, /app_project_technology_slugs_map/);
+  assert.match(api, /AND tech\.status='published'/);
+});
+
+test('SQL splitter is shared in bootstrap, CLI scripts guard SAPI, and admin UI avoids technology array crash', async () => {
+  const bootstrap = await read('backend/bootstrap.php');
+  const migrate = await read('backend/bin/migrate.php');
+  const seed = await read('backend/bin/seed.php');
+  const createAdmin = await read('backend/bin/create-admin.php');
+  const adminUi = await read('src/pages/admin/AdminApp.tsx');
+
+  assert.match(bootstrap, /function app_split_sql_statements\(string \$sql\): array/);
+  assert.match(bootstrap, /HTTP_REFERER/);
+  for (const cli of [migrate, seed, createAdmin]) {
+    assert.match(cli, /PHP_SAPI !== 'cli'/);
+  }
+  assert.match(createAdmin, /utf8_character_count\(\$name\)/);
+  assert.match(adminUi, /Array\.isArray\(nextBase\.technologies\)/);
+  assert.match(adminUi, /key=\{`\$\{item\.id\}-\$\{activeLocale\}`\}/);
+});
+
+test('public and admin collections batch relational lookups instead of N+1 queries', async () => {
+  const api = await read('backend/src/router.php');
+  assert.match(api, /WHERE pt\.project_id IN \(\{\$in\}\)/);
+  assert.match(api, /WHERE pi\.project_id IN \(\{\$in\}\)/);
+  assert.match(api, /ORDER BY r\.' \. str_replace\(', ', ', r\.', \$spec\['order'\]\)/);
+  assert.match(api, /ESCAPE '\\\\\\\\'/);
+  assert.doesNotMatch(api, /foreach \(\$stmt->fetchAll\(PDO::FETCH_COLUMN\) as \$id\)/);
+});
+
+test('admin bilingual forms preserve edits across FA/EN tab switches before saving', async () => {
+  const adminUi = await read('src/pages/admin/AdminApp.tsx');
+  assert.match(adminUi, /serializedTranslations\[lang\] = currentLang/);
+  assert.match(adminUi, /dirtyLocales\[other\]/);
 });

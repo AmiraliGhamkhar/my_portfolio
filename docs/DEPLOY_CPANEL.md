@@ -54,7 +54,7 @@ Review these paths in the private configuration:
 - `allowed_origin`: the exact HTTPS origin, with no path, such as `https://amiralighamkhar.ir`.
 - `trust_proxy_https`: leave false for direct Apache HTTPS. Enable only if the host terminates TLS at a trusted proxy and documents a trustworthy `X-Forwarded-Proto` header.
 
-The entrypoint also supports `PORTFOLIO_PRIVATE_DIR` if the private directory is elsewhere. If the public origin/domain changes, update the configured origin and matching canonical-origin values in `public/.htaccess`, `public/robots.txt`, `index.html`, `src/lib/seo.ts`, `src/components/SeoManager.tsx`, `src/components/StructuredData.tsx`, `scripts/prerender.mjs`, and the origin assertions in `scripts/check-build.mjs`, then build again.
+The entrypoint also supports `PORTFOLIO_PRIVATE_DIR` if the private directory is elsewhere. If the public origin/domain changes, update the configured origin and matching canonical-origin values in `public/.htaccess`, `public/robots.txt`, `index.html`, `src/lib/seo.ts`, and the origin assertions in `scripts/check-build.mjs`, then build again.
 
 ## 4. Create the public upload directory
 
