@@ -10,6 +10,19 @@ export interface PageSeo {
 
 const ORIGIN = 'https://amiralighamkhar.ir';
 
+export function siteUrl(path = '/'): string {
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${ORIGIN}${path.startsWith('/') ? path : `/${path}`}`;
+}
+
+export function alternateUrls(pathname: string): { fa: string; en: string; xDefault: string } {
+  const tail = pathname.replace(/^\/(?:fa|en)(?=\/|$)/, '');
+  let normalized = tail ? (tail.startsWith('/') ? tail : `/${tail}`) : '/';
+  if (normalized !== '/' && !normalized.endsWith('/')) normalized += '/';
+  const fa = `${ORIGIN}/fa${normalized}`;
+  return { fa, en: `${ORIGIN}/en${normalized}`, xDefault: fa };
+}
+
 export function getSeoForPath(pathname: string): PageSeo {
   const cleanPath = pathname.startsWith('/') ? pathname : `/${pathname}`;
   const locale = localeFromPath(cleanPath);
@@ -54,11 +67,11 @@ export function getSeoForPath(pathname: string): PageSeo {
       type: 'website',
     };
   }
-  if (cleanPath === '/admin/' || cleanPath.startsWith('/admin/')) {
+    if (cleanPath === '/admin' || cleanPath.startsWith('/admin/')) {
     return {
-      locale: 'en',
-      title: 'Portfolio Admin — Amirali Ghamkhar',
-      description: 'Private portfolio content management.',
+      locale: 'fa',
+      title: 'مدیریت وب‌سایت — امیرعلی غمخوار | پنل مدیریت',
+      description: 'پنل مدیریت محتوای وب‌سایت امیرعلی غمخوار.',
       canonical: `${ORIGIN}/admin/`,
       type: 'website',
     };

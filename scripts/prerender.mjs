@@ -5,7 +5,6 @@ import { createServer } from 'vite';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = path.join(root, 'dist');
-const origin = 'https://amiralighamkhar.ir';
 const vite = await createServer({
   configFile: path.join(root, 'vite.config.ts'),
   server: { middlewareMode: true },
@@ -14,7 +13,7 @@ const vite = await createServer({
 });
 
 try {
-  const [{ render }, { publicRoutes }, { getSeoForPath }] = await Promise.all([
+  const [{ render }, { publicRoutes }, { alternateUrls, getSeoForPath, siteUrl }] = await Promise.all([
     vite.ssrLoadModule('/src/entry-server.tsx'),
     vite.ssrLoadModule('/src/content.ts'),
     vite.ssrLoadModule('/src/lib/seo.ts'),
@@ -50,21 +49,24 @@ try {
     page = replaceMeta(page, 'description', seo.description);
     page = replaceMeta(page, 'og:title', seo.title, true);
     page = replaceMeta(page, 'og:description', seo.description, true);
-    page = replaceMeta(page, 'og:url', `${origin}${route}`, true);
+    page = replaceMeta(page, 'og:url', seo.canonical, true);
     page = replaceMeta(page, 'og:type', seo.type, true);
     page = replaceMeta(page, 'og:locale', locale === 'fa' ? 'fa_IR' : 'en_US', true);
     page = replaceMeta(page, 'twitter:card', 'summary_large_image');
     page = replaceMeta(page, 'twitter:title', seo.title);
     page = replaceMeta(page, 'twitter:description', seo.description);
-    page = replaceLink(page, 'canonical', `${origin}${route}`);
+    page = replaceLink(page, 'canonical', seo.canonical);
     if (route.startsWith('/fa/') || route.startsWith('/en/')) {
-      const tail = route.replace(/^\/(?:fa|en)/, '');
-      const suffix = tail || '/';
-      page = replaceLink(page, 'alternate', `${origin}/fa${suffix}`, 'fa');
-      page = replaceLink(page, 'alternate', `${origin}/en${suffix}`, 'en');
-      page = replaceLink(page, 'alternate', `${origin}/fa${suffix}`, 'x-default');
+      const { fa, en, xDefault } = alternateUrls(route);
+      page = replaceLink(page, 'alternate', fa, 'fa');
+      page = replaceLink(page, 'alternate', en, 'en');
+      page = replaceLink(page, 'alternate', xDefault, 'x-default');
     }
-    if (route.startsWith('/admin')) page = replaceMeta(page, 'robots', 'noindex,nofollow');
+    if (route.startsWith('/admin')) {
+      page = replaceMeta(page, 'robots', 'noindex,nofollow');
+      page = page.replace(/\s*<link rel="alternate" hreflang="[^"]+" href="[^"]+" \/>/g, '');
+      page = page.replace(/\s*<meta (?:property="og:image[^"]*"|name="twitter:image") content="[^"]+" \/>/g, '');
+    }
 
     const destination = route === '/admin/' ? path.join(outDir, 'admin', 'index.html') : path.join(outDir, route.slice(1), 'index.html');
     await mkdir(path.dirname(destination), { recursive: true });
@@ -72,19 +74,16 @@ try {
   }
 
   const publicPaths = publicRoutes.filter((route) => route.startsWith('/fa/') || route.startsWith('/en/'));
-  const sitemapEntries = publicPaths;
-  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${sitemapEntries.map((route) => {
-    const locale = route.startsWith('/en/') ? 'en' : 'fa';
-    const tail = route.replace(/^\/(?:fa|en)/, '') || '/';
-    const fa = `${origin}/fa${tail}`;
-    const en = `${origin}/en${tail}`;
-    return `  <url><loc>${origin}${route}</loc><xhtml:link rel="alternate" hreflang="fa" href="${fa}"/><xhtml:link rel="alternate" hreflang="en" href="${en}"/><xhtml:link rel="alternate" hreflang="x-default" href="${fa}"/></url>`;
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${publicPaths.map((route) => {
+    const { fa, en, xDefault } = alternateUrls(route);
+    return `  <url><loc>${siteUrl(route)}</loc><xhtml:link rel="alternate" hreflang="fa" href="${fa}"/><xhtml:link rel="alternate" hreflang="en" href="${en}"/><xhtml:link rel="alternate" hreflang="x-default" href="${xDefault}"/></url>`;
   }).join('\n')}\n</urlset>\n`;
   await writeFile(path.join(outDir, 'sitemap.xml'), sitemap, 'utf8');
 
-  const rootPage = `<!doctype html>\n<html lang="fa" dir="rtl">\n<head>\n<meta charset="UTF-8"/>\n<meta name="viewport" content="width=device-width, initial-scale=1.0"/>\n<meta name="robots" content="noindex,follow"/>\n<meta http-equiv="refresh" content="0;url=/fa/"/>\n<title>Amirali Ghamkhar — Persian / فارسی</title>\n<link rel="canonical" href="${origin}/fa/"/>\n<link rel="alternate" hreflang="fa" href="${origin}/fa/"/>\n<link rel="alternate" hreflang="en" href="${origin}/en/"/>\n<link rel="alternate" hreflang="x-default" href="${origin}/fa/"/>\n</head>\n<body><p><a href="/fa/">ادامه به فارسی</a> · <a href="/en/">Continue in English</a></p></body>\n</html>\n`;
+  const { fa: rootFa, en: rootEn, xDefault: rootDefault } = alternateUrls('/');
+  const rootPage = `<!doctype html>\n<html lang="fa" dir="rtl">\n<head>\n<meta charset="UTF-8"/>\n<meta name="viewport" content="width=device-width, initial-scale=1.0"/>\n<meta name="robots" content="noindex,follow"/>\n<meta http-equiv="refresh" content="0;url=/fa/"/>\n<title>Amirali Ghamkhar — Persian / فارسی</title>\n<link rel="canonical" href="${rootFa}"/>\n<link rel="alternate" hreflang="fa" href="${rootFa}"/>\n<link rel="alternate" hreflang="en" href="${rootEn}"/>\n<link rel="alternate" hreflang="x-default" href="${rootDefault}"/>\n</head>\n<body><p><a href="/fa/">ادامه به فارسی</a> · <a href="/en/">Continue in English</a></p></body>\n</html>\n`;
   await writeFile(path.join(outDir, 'index.html'), rootPage, 'utf8');
-  console.log(`Pre-rendered ${publicRoutes.length - 1} routes and generated sitemap.xml.`);
+  console.log(`Pre-rendered ${publicRoutes.length} routes and generated sitemap.xml.`);
 } finally {
   await vite.close();
 }

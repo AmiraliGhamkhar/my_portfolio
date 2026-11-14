@@ -20,7 +20,7 @@ export default defineConfig({
     allowedHosts: true,
   },
   ssr: {
-    noExternal: ['react-router', 'react-router-dom'],
+    noExternal: ['react-router'],
   },
   build: {
     target: 'es2022',

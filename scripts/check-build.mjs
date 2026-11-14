@@ -28,10 +28,13 @@ for (const [route, lang, dir, marker] of routes) {
   assert.match(html, /<title>[^<]+<\/title>/, `${route} has a title`);
   assert.match(html, /name="description" content="[^"]+"/, `${route} has a description`);
   assert.match(html, /rel="canonical"/, `${route} has a canonical URL`);
-  if (route !== '/admin/') assert.match(html, /property="og:image"/, `${route} has a social preview image`);
   if (route !== '/admin/') {
+    assert.match(html, /property="og:image"/, `${route} has a social preview image`);
     assert.match(html, /hreflang="fa"/, `${route} has Persian hreflang`);
     assert.match(html, /hreflang="en"/, `${route} has English hreflang`);
+  } else {
+    assert.match(html, /name="robots" content="noindex,nofollow"/, '/admin/ has noindex,nofollow');
+    assert.doesNotMatch(html, /hreflang=/, '/admin/ does not emit public hreflang tags');
   }
 }
 const sitemap = await readFile(path.join(dist, 'sitemap.xml'), 'utf8');

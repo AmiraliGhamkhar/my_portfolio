@@ -1,5 +1,6 @@
 import { useLocation } from 'react-router';
 import { projectForPath, profileByLocale, type Locale } from '../content';
+import { siteUrl } from '../lib/seo';
 import { useSiteContent } from '../lib/SiteContent';
 
 export function StructuredData({ locale }: { locale: Locale }) {
@@ -12,7 +13,7 @@ export function StructuredData({ locale }: { locale: Locale }) {
   const person = {
     '@type': 'Person',
     name,
-    url: `https://amiralighamkhar.ir/${locale}/`,
+    url: siteUrl(`/${locale}/`),
     jobTitle: profile.role,
     sameAs: [profile.githubUrl].filter(Boolean),
     knowsAbout: ['Artificial intelligence', 'Medical AI', 'Software engineering', 'Speech processing'],
@@ -23,7 +24,7 @@ export function StructuredData({ locale }: { locale: Locale }) {
         '@type': 'CreativeWork',
         name: project[locale].title,
         description: project[locale].summary,
-        url: `https://amiralighamkhar.ir${location.pathname}`,
+        url: siteUrl(location.pathname),
         inLanguage: locale,
         creator: person,
         sameAs: project.githubUrl ? [project.githubUrl] : [],
@@ -31,8 +32,8 @@ export function StructuredData({ locale }: { locale: Locale }) {
     : {
         '@context': 'https://schema.org',
         '@graph': [
-          { '@context': 'https://schema.org', ...person, mainEntityOfPage: 'https://amiralighamkhar.ir/' },
-          { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Amirali Ghamkhar', url: 'https://amiralighamkhar.ir/', inLanguage: locale },
+          { '@context': 'https://schema.org', ...person, mainEntityOfPage: siteUrl('/') },
+          { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Amirali Ghamkhar', url: siteUrl('/'), inLanguage: locale },
         ],
       };
 
